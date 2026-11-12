@@ -1,0 +1,25 @@
+# 50 classrooms of 30: a teacher (camera + screen share), 4 students with a mic
+# (1 talks at a time, the turn moves every 20 s), 25 students who only watch.
+# Students' networks are mixed (see network), 5% of the watchers leave and come
+# back every minute. Look at: bench_unmute_heard_seconds (talk → heard),
+# bench_recovery_seconds{event=churn}, and the per-profile freeze / delay rows.
+# Timeline: 15 s baseline + 2 x 2 min + 10 min hold ≈ 15 min.
+name: classroom
+rooms: 50
+maxParticipants: 30
+publishers: 1
+speakers: 4
+unmuted: 1
+rotate: 20s
+screenShare: true
+audio: true
+video: true
+add: 10
+every: 2m
+hold: 10m
+subscribe: {high: 20, medium: 50, low: 30}
+churn: {percent: 5, every: 1m}
+network:
+  - {name: clean, percent: 60}
+  - {name: mobile, percent: 25, delay: 60ms, jitter: 20ms, loss: 1}
+  - {name: weak, percent: 15, kbps: 800, dip: {kbps: 250, for: 10s, every: 1m}}

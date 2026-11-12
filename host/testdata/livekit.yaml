@@ -1,0 +1,13 @@
+# fake LiveKit config for host/test-strip-secrets.sh; every value is made up
+port: 7880
+keys:
+  APIfakeKEY: fake-secret-0123456789
+rtc:
+  tcp_port: 7881
+  port_range_start: 50000
+turn:
+  enabled: false
+  # a commented credential must not survive either
+  password: fake-turn-pass-555
+webhook:
+  api_key: APIfakeKEY

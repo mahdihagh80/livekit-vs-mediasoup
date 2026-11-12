@@ -1,0 +1,33 @@
+# Experiment 4: 1:1 calls to 4,500 people, for the pacer comparison (as plans/78 does for group calls).
+# Both people in a call publish audio (as audio/red) + VP9 SVC in two spatial layers (180p 150 kbps +
+# 360p 400 kbps, about 550 kbps per publisher) and subscribe to each other.
+# Per generator 375 more full rooms (750 people) every minute, up to 1,125 rooms:
+# fleet 1,500 / 3,000 / 4,500 people, then 2 minutes at 4,500. Rooms are not shared between
+# the generators (shared_rooms off), so both start each step at the same moment.
+# Run three times with only LiveKit's send path changed:
+#   w1r     default no-queue pacer
+#   w1rpt   send_side_bwe_pacer: pass-through
+#   w1rptb  pass-through + rtc.batch_io (batch_size 32, max_flush_interval 1ms)
+# LiveKit and NIC layout as plans/78: 92 logical CPUs, 92 UDP mux ports, IRQs on CPUs 0-15.
+# Step timing (60 s steps): light profiles from +40 s, heavy from +50 s; the steady numbers are read
+# from the second minute at 4,500 people. Timeline: 15 s baseline + 2 x 1 min + 2 min hold + leave ≈ 5 min.
+name: x4-w1-4500-red
+red: true
+codec: vp9
+rooms: 1125
+maxParticipants: 2
+publishers: 2
+audio: true
+video: true
+addRooms: 375
+every: 1m
+hold: 2m
+subscribe: {high: 20, medium: 50, low: 30}
+networkTarget: all
+network:
+  - {name: clean, percent: 40}
+  - {name: mobile, percent: 15, delay: 60ms, jitter: 20ms, loss: 1}
+  - {name: dippy, percent: 15, dip: {kbps: 300, for: 15s, every: 1m}}
+  - {name: capped, percent: 10, kbps: 1000}
+  - {name: burst, percent: 10, burst: {loss: 5, length: 50ms}}
+  - {name: far, percent: 10, delay: 150ms, jitter: 30ms}

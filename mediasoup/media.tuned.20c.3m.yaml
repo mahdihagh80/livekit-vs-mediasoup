@@ -1,0 +1,70 @@
+# Sensitivity variant: 3 Mbps cap, 300 kbps start. Not for LiveKit-vs-mediasoup comparisons.
+# Otherwise as media.tuned.20c.yaml (the A/B config); bwe_log renamed.
+# Start with: MEDIA_CONFIG=media.tuned.20c.3m.yaml docker compose -f compose.yaml up -d
+# control_cpus is the Node process; worker_cpus is one mediasoup-worker each.
+# cpu_budget must equal control_cpus + worker_cpus.
+worker_cpus: "14-33"
+rpc_listen: 127.0.0.1:3100
+# Public port (443-450 range is open) so a laptop Prometheus can scrape it.
+metrics_listen: 0.0.0.0:446
+listen_ip: 203.0.113.10
+announced_address: 203.0.113.10
+socket_buffer_bytes: 16777216
+# Room placement:
+#   webinar     publishers of a room on one worker (+ up to max_subs_per_worker
+#               subscribers); more subscribers on new workers fed by pipes.
+#               Each worker serves one room only.
+#   one_to_one  whole room on one random worker.
+#   capacity    load-unit admission control below.
+scheduler: capacity
+max_subs_per_worker: 300
+# capacity scheduler only from here to peer_reserve.
+router_max_peers: 200
+# Admission control: a worker takes at most worker_capacity load units.
+# Joins/produces/consumes that would go over are rejected.
+# One worker (one physical core) holds 400 units: ~13 full 10-peer rooms (~29 units each).
+worker_capacity: 400
+load_weights:
+  producer: 1
+  consumer: 1.5
+  pipe_consumer: 2
+  pipe_producer: 1
+# Units held per joining peer until its streams exist (3 = one A/V subscription).
+peer_reserve: 3
+rtc_base_port: 44444
+worker_log_level: warn
+enable_tcp: false
+# bps. Tuned: start low (mediasoup default is 600k); the first probes are 3x and 6x
+# this, so a low start keeps startup probe bursts small. BWE climbs from here.
+initial_outgoing_bitrate: 300000
+# Optional per-transport BWE settings (mediasoup 3.32 built-in BWE), all bps.
+# Leave a key out to keep mediasoup's default.
+# enable_bwe: true                 # false = no BWE on any transport (default true)
+# min_outgoing_bitrate: 30000      # floor for the send estimate (default: worker minimum, 30 kbps)
+# Tuned: top layer 1.5 Mbps + audio fits; also caps probe bursts (default 10 Mbps).
+max_outgoing_bitrate: 3000000
+# max_incoming_bitrate: 5000000    # cap per publisher transport, >= 30000, REMB only (default: no cap)
+# Per-viewer BWE telemetry (src/bwe.ts): 'bwe' trace + getStats() every 1 s on each
+# recv transport, exported as mediasoup_peer_* metrics labelled by peer. bwe_log also
+# appends it as JSON lines (wall-clock ms) to that path and implies bwe_telemetry.
+# Both default to off. /logs is ./logs next to compose.yaml.
+bwe_telemetry: true
+bwe_log: /logs/bwe-tuned-20c-3m.jsonl
+media_codecs:
+  - kind: audio
+    mimeType: audio/opus
+    clockRate: 48000
+    channels: 2
+  - kind: video
+    mimeType: video/VP8
+    clockRate: 90000
+    parameters:
+      x-google-start-bitrate: 1000
+  - kind: video
+    mimeType: video/VP9
+    clockRate: 90000
+    parameters:
+      profile-id: 0
+events_url: http://127.0.0.1:18081/internal/events
+control_cpus: "8"
+cpu_budget: "8,14-33"

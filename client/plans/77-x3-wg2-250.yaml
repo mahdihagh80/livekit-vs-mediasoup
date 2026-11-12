@@ -1,0 +1,26 @@
+# Experiment 3b: as plans/76, but TWO group rooms. Each room has 10 publishers (audio + VP9 SVC,
+# two spatial layers L2T3_KEY: 180p 150 kbps + 360p 400 kbps); every viewer receives 10 video + 10 audio tracks.
+# Every minute each room grows by 250 people: 250 / 500 / 750 / 1,000 per room,
+# fleet 500 / 1,000 / 1,500 / 2,000. The 20 publishers are all in from step 1.
+# Shared rooms on TWO generators (prefix "x3wg2-", shards 1/2 and 2/2); LiveKit and NIC layout as plans/76.
+# Step timing (60 s steps): clean window +20..+38 s, light profiles from +40 s, heavy from +50 s.
+# Timeline: 15 s baseline + 3 x 1 min + 2 min hold + leave ≈ 6 min.
+name: x3-wg2-250
+codec: vp9
+rooms: 2
+maxParticipants: 1000
+publishers: 10
+audio: true
+video: true
+add: 250
+every: 1m
+hold: 2m
+subscribe: {high: 20, medium: 50, low: 30}
+networkTarget: all
+network:
+  - {name: clean, percent: 40}
+  - {name: mobile, percent: 15, delay: 60ms, jitter: 20ms, loss: 1}
+  - {name: dippy, percent: 15, dip: {kbps: 300, for: 15s, every: 1m}}
+  - {name: capped, percent: 10, kbps: 1000}
+  - {name: burst, percent: 10, burst: {loss: 5, length: 50ms}}
+  - {name: far, percent: 10, delay: 150ms, jitter: 30ms}

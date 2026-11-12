@@ -1,0 +1,40 @@
+# W4, webinar high: ONE room of 5003, 3 video publishers (audio + VP9 SVC
+# L3T1), 5000 viewers. Shrunk from 10003 on 2026-11-06 after the calibration ramp (plan 65)
+#: generators are valid at this size (~17 % CPU per 1000
+# viewers per generator, so ~45 % here); LiveKit's one room passed the clean SLO at 2001,
+# failed it at 4002 and collapsed at 6003. A clean-SLO fail with valid generators counts as
+# the SFU's result, not a void run.
+# Shared rooms on TWO generators: run on both at the same time with
+# loadgen.shared_rooms {prefix: "w4-", shard: "1/2"} on gen-1 and {prefix: "w4-",
+# shard: "2/2"} on gen-2. Shard 1: the 3 publishers + 2500 viewers; shard 2: 2500
+# viewers, starting viewer_delay (20 s) later; shard 1 holds that much longer.
+# Per shard: clean 40 %, dippy/mobile 14/16 and 16/14, the rest exact; fleet exact.
+#
+# Per generator: 7500 video subscriptions ≈ 0.73 Mbps each (download ≈ 5.5 Gbps + audio).
+# SFU total ≈ 11 Gbps out. mediasoup: media.tuned.50p.webinar.yaml (webinar scheduler).
+# Timeline: 15 s baseline, one step (everyone queued at once, publishers
+# first in each room, paced by loadgen.max_inflight_joins), hold 9 min, leave.
+# Needs report.warmup: 120s in bench.yaml so the measured window is [2:00, 9:00] = 7 min
+# (7 dips for dippy). Run 3x per SFU alternating LK, MS, LK, MS, LK, MS.
+name: w4-webinar-5k
+codec: vp9
+rooms: 1
+maxParticipants: 5003
+publishers: 3
+audio: true
+video: true
+add: 5003         # one step: everyone joins
+every: 9m
+hold: 9m
+subscribe: {high: 20, medium: 50, low: 30}
+# Network mix. networkTarget all: everyone's SUBSCRIBE
+# connection (SFU -> person) gets a profile by position, publishers included; publish
+# connections stay clean both ways. Same people impaired on both SFUs.
+networkTarget: all
+network:
+  - {name: clean, percent: 40}
+  - {name: mobile, percent: 15, delay: 60ms, jitter: 20ms, loss: 1}
+  - {name: dippy, percent: 15, dip: {kbps: 300, for: 15s, every: 1m}}
+  - {name: capped, percent: 10, kbps: 1000}
+  - {name: burst, percent: 10, burst: {loss: 5, length: 50ms}}
+  - {name: far, percent: 10, delay: 150ms, jitter: 30ms}

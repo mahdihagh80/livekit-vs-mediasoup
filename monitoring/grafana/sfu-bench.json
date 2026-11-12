@@ -1,0 +1,2926 @@
+{
+ "title": "SFU bench: LiveKit vs mediasoup",
+ "uid": "sfu-bench",
+ "editable": true,
+ "schemaVersion": 39,
+ "time": {
+  "from": "now-1h",
+  "to": "now"
+ },
+ "refresh": "10s",
+ "tags": [
+  "sfu-bench"
+ ],
+ "templating": {
+  "list": [
+   {
+    "name": "ds",
+    "type": "datasource",
+    "query": "prometheus",
+    "label": "Prometheus (bench)"
+   },
+   {
+    "name": "profile",
+    "label": "Viewer network profile",
+    "type": "query",
+    "datasource": {
+     "type": "prometheus",
+     "uid": "${ds}"
+    },
+    "query": {
+     "query": "label_values(bench_sub_tracks, profile)",
+     "refId": "profile"
+    },
+    "definition": "label_values(bench_sub_tracks, profile)",
+    "refresh": 2,
+    "multi": true,
+    "includeAll": true,
+    "allValue": ".*",
+    "current": {
+     "text": "All",
+     "value": "$__all"
+    },
+    "sort": 1
+   }
+  ]
+ },
+ "panels": [
+  {
+   "type": "row",
+   "title": "Load (what the generators are doing)",
+   "id": 1,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 0
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Participants",
+   "id": 2,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "target = participants requested for the current step",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 1
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (state) (bench_participants)",
+     "legendFormat": "{{state}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "sum(bench_target_participants)",
+     "legendFormat": "target",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "C",
+     "expr": "max(bench_step)",
+     "legendFormat": "step #",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Forwarded tracks (received by subscribers)",
+   "id": 3,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 1
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (kind) (bench_sub_tracks)",
+     "legendFormat": "{{kind}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Join latency / time to first frame",
+   "id": 4,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 1
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.95, sum by (le) (rate(bench_join_duration_seconds_bucket{result=\"ok\"}[$__rate_interval])))",
+     "legendFormat": "join p95",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "histogram_quantile(0.95, sum by (le) (rate(bench_ttff_seconds_bucket[$__rate_interval])))",
+     "legendFormat": "ttff p95",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "C",
+     "expr": "sum(rate(bench_join_failures_total[$__rate_interval]))",
+     "legendFormat": "failures/s",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "row",
+   "title": "Quality (what users would feel) \u2014 compare these between SFUs",
+   "id": 5,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 9
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "One-way delay video (pub \u2192 SFU \u2192 sub)",
+   "id": 6,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 10
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.5, sum by (le) (rate(bench_sub_e2e_delay_seconds_bucket{kind=\"video\",profile=~\"$profile\"}[$__rate_interval])))",
+     "legendFormat": "p50",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "histogram_quantile(0.95, sum by (le) (rate(bench_sub_e2e_delay_seconds_bucket{kind=\"video\",profile=~\"$profile\"}[$__rate_interval])))",
+     "legendFormat": "p95",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "C",
+     "expr": "histogram_quantile(0.99, sum by (le) (rate(bench_sub_e2e_delay_seconds_bucket{kind=\"video\",profile=~\"$profile\"}[$__rate_interval])))",
+     "legendFormat": "p99",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "One-way delay audio",
+   "id": 7,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 10
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.5, sum by (le) (rate(bench_sub_e2e_delay_seconds_bucket{kind=\"audio\",profile=~\"$profile\"}[$__rate_interval])))",
+     "legendFormat": "p50",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "histogram_quantile(0.95, sum by (le) (rate(bench_sub_e2e_delay_seconds_bucket{kind=\"audio\",profile=~\"$profile\"}[$__rate_interval])))",
+     "legendFormat": "p95",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "C",
+     "expr": "histogram_quantile(0.99, sum by (le) (rate(bench_sub_e2e_delay_seconds_bucket{kind=\"audio\",profile=~\"$profile\"}[$__rate_interval])))",
+     "legendFormat": "p99",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Jitter p95 (RFC3550)",
+   "id": 8,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 10
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.95, sum by (le) (rate(bench_sub_jitter_seconds_bucket{kind=\"video\",profile=~\"$profile\"}[$__rate_interval])))",
+     "legendFormat": "video",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "histogram_quantile(0.95, sum by (le) (rate(bench_sub_jitter_seconds_bucket{kind=\"audio\",profile=~\"$profile\"}[$__rate_interval])))",
+     "legendFormat": "audio",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Packet loss at subscribers",
+   "id": 9,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 18
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "100 * sum by (kind) (rate(bench_sub_lost_packets_total{profile=~\"$profile\"}[$__rate_interval])) / (sum by (kind) (rate(bench_sub_packets_total{profile=~\"$profile\"}[$__rate_interval])) + sum by (kind) (rate(bench_sub_lost_packets_total{profile=~\"$profile\"}[$__rate_interval])))",
+     "legendFormat": "{{kind}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Video frozen time",
+   "id": 10,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 18
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "100 * sum(rate(bench_sub_freeze_seconds_total{profile=~\"$profile\"}[$__rate_interval])) / sum(bench_sub_tracks{kind=\"video\",profile=~\"$profile\"})",
+     "legendFormat": "% of time frozen",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "sum(rate(bench_sub_freezes_total{profile=~\"$profile\"}[$__rate_interval]))",
+     "legendFormat": "freezes/s",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Received video bitrate per track",
+   "id": 11,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "All viewers (no profile filter). By requested layer: the panel in the next row.",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 18
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bps",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(rate(bench_sub_bytes_total{kind=\"video\"}[$__rate_interval])) * 8 / sum(bench_sub_tracks{kind=\"video\"})",
+     "legendFormat": "bps/track",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "RTCP arriving at publishers",
+   "id": 12,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 26
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "pps",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (type) (rate(bench_pub_rtcp_total[$__rate_interval]))",
+     "legendFormat": "{{type}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Forced keyframes (PLI/FIR answered)",
+   "id": 13,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 26
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(rate(bench_pub_forced_keyframes_total[$__rate_interval]))",
+     "legendFormat": "keyframes/s",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Unexpected drops",
+   "id": 14,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 26
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(increase(bench_disconnects_total[1m]))",
+     "legendFormat": "dropped participants / min",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "row",
+   "title": "Per-viewer quality (one sample per track per 5 s: the worst viewers, not the average packet)",
+   "id": 15,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 34
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Viewers with video fps \u2264 25",
+   "id": 16,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "Share of video tracks that got 25 fps or less in a 5 s window. Sent at 30 fps.",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 35
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "100 * sum by (profile) (rate(bench_sub_track_fps_bucket{le=~\"25(\\\\.0)?\",profile=~\"$profile\"}[$__rate_interval])) / sum by (profile) (rate(bench_sub_track_fps_count{profile=~\"$profile\"}[$__rate_interval]))",
+     "legendFormat": "{{profile}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Video fps per viewer",
+   "id": 17,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "Sent at 30 fps",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 35
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.05, sum by (le, profile) (rate(bench_sub_track_fps_bucket{profile=~\"$profile\"}[$__rate_interval])))",
+     "legendFormat": "p5 {{profile}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "histogram_quantile(0.5, sum by (le, profile) (rate(bench_sub_track_fps_bucket{profile=~\"$profile\"}[$__rate_interval])))",
+     "legendFormat": "p50 {{profile}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Packet loss per viewer",
+   "id": 18,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "p95 of per-track loss %, and the share of tracks above 2% loss",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 35
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "100 * histogram_quantile(0.95, sum by (le, kind, profile) (rate(bench_sub_track_loss_ratio_bucket{profile=~\"$profile\"}[$__rate_interval])))",
+     "legendFormat": "p95 loss {{kind}} {{profile}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "100 - 100 * sum by (kind, profile) (rate(bench_sub_track_loss_ratio_bucket{le=~\"0.02(\\\\.0)?\",profile=~\"$profile\"}[$__rate_interval])) / sum by (kind, profile) (rate(bench_sub_track_loss_ratio_count{profile=~\"$profile\"}[$__rate_interval]))",
+     "legendFormat": "tracks with > 2% loss {{kind}} {{profile}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Received / requested kbps per viewer",
+   "id": 19,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "1.0 = the viewer gets the layer it asked for. The SLO line is min_video_ratio (0.8).",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 43
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percentunit",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.05, sum by (le, quality) (rate(bench_sub_track_kbps_ratio_bucket{profile=~\"$profile\"}[$__rate_interval])))",
+     "legendFormat": "p5 {{quality}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "histogram_quantile(0.5, sum by (le, quality) (rate(bench_sub_track_kbps_ratio_bucket{profile=~\"$profile\"}[$__rate_interval])))",
+     "legendFormat": "p50 {{quality}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Freeze length",
+   "id": 20,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "How long each freeze lasted (gap above loadgen.freeze_threshold). Many short ones and a few long ones feel different.",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 43
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.5, sum by (le, profile) (rate(bench_sub_freeze_duration_seconds_bucket{profile=~\"$profile\"}[$__rate_interval])))",
+     "legendFormat": "p50 {{profile}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "histogram_quantile(0.95, sum by (le, profile) (rate(bench_sub_freeze_duration_seconds_bucket{profile=~\"$profile\"}[$__rate_interval])))",
+     "legendFormat": "p95 {{profile}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Frames vs requested layer",
+   "id": 21,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "lower = the SFU downgraded the viewer (BWE / congestion); 0 on a clean network",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 43
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "100 * sum by (delivered) (rate(bench_sub_layer_frames_total{delivered!=\"requested\",profile=~\"$profile\"}[$__rate_interval])) / scalar(sum(rate(bench_sub_layer_frames_total{profile=~\"$profile\"}[$__rate_interval])))",
+     "legendFormat": "{{delivered}} than requested",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Received bitrate per track by requested layer",
+   "id": 22,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "Compare with loadgen.media.layers kbps (default 150 / 400 / 1500)",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 51
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bps",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "8 * sum by (quality) (rate(bench_sub_video_bytes_by_quality_total{profile=~\"$profile\"}[$__rate_interval])) / sum by (quality) (bench_sub_video_tracks_by_quality{profile=~\"$profile\"})",
+     "legendFormat": "{{quality}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Video tracks by requested layer",
+   "id": 23,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 51
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 10,
+      "stacking": {
+       "mode": "normal"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (quality) (bench_sub_video_tracks_by_quality{profile=~\"$profile\"})",
+     "legendFormat": "{{quality}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Time to first frame",
+   "id": 24,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 51
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.5, sum by (le, profile) (rate(bench_ttff_seconds_bucket{profile=~\"$profile\"}[$__rate_interval])))",
+     "legendFormat": "p50 {{profile}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "histogram_quantile(0.95, sum by (le, profile) (rate(bench_ttff_seconds_bucket{profile=~\"$profile\"}[$__rate_interval])))",
+     "legendFormat": "p95 {{profile}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Retransmission and feedback (subscribers)",
+   "id": 25,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 59
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "pps",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (kind) (rate(bench_sub_rtx_packets_total[$__rate_interval]))",
+     "legendFormat": "RTX received {{kind}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "sum by (profile) (rate(bench_sub_rtx_duplicate_packets_total[$__rate_interval]))",
+     "legendFormat": "RTX duplicate {{profile}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "C",
+     "expr": "sum(rate(bench_sub_nack_requested_packets_total[$__rate_interval]))",
+     "legendFormat": "seq requested in NACKs",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "D",
+     "expr": "sum by (kind) (rate(bench_sub_out_of_order_packets_total[$__rate_interval]))",
+     "legendFormat": "out of order {{kind}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "E",
+     "expr": "sum by (type) (rate(bench_sub_rtcp_sent_total[$__rate_interval]))",
+     "legendFormat": "sent {{type}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Publisher RTT to the SFU",
+   "id": 26,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "From the SFU's receiver reports. Rising with load = SFU queueing",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 59
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.5, sum by (le) (rate(bench_pub_rtt_seconds_bucket[$__rate_interval])))",
+     "legendFormat": "p50",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "histogram_quantile(0.95, sum by (le) (rate(bench_pub_rtt_seconds_bucket[$__rate_interval])))",
+     "legendFormat": "p95",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Delay p95 by profile",
+   "id": 27,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 59
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.95, sum by (le, profile) (rate(bench_sub_e2e_delay_seconds_bucket{profile=~\"$profile\",kind=\"video\"}[$__rate_interval])))",
+     "legendFormat": "video {{profile}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "histogram_quantile(0.95, sum by (le, profile) (rate(bench_sub_e2e_delay_seconds_bucket{profile=~\"$profile\",kind=\"audio\"}[$__rate_interval])))",
+     "legendFormat": "audio {{profile}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "row",
+   "title": "Disturbances and recovery (plans with events, churn, rejoin or network dips)",
+   "id": 28,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 67
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Events, rejoins, reconnecting",
+   "id": 29,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 68
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (type) (increase(bench_events_total[1m]))",
+     "legendFormat": "event {{type}} / min",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "sum by (reason) (increase(bench_rejoins_total[1m]))",
+     "legendFormat": "rejoin {{reason}} / min",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "C",
+     "expr": "sum(bench_participants{state=\"reconnecting\"})",
+     "legendFormat": "reconnecting now",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Recovery time (window 2m)",
+   "id": 30,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "Disturbance (or end of an outage) -> media again: first video keyframe, else audio",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 68
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.5, sum by (le, event) (increase(bench_recovery_seconds_bucket[2m])))",
+     "legendFormat": "p50 {{event}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "histogram_quantile(0.95, sum by (le, event) (increase(bench_recovery_seconds_bucket[2m])))",
+     "legendFormat": "p95 {{event}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Recovery missed (no media within 60 s)",
+   "id": 31,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 68
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (event) (increase(bench_recovery_missed_total[2m]))",
+     "legendFormat": "{{event}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Layer switch time (window 2m)",
+   "id": 32,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "down: dip start -> lower layer delivered; up: dip end -> the layer from before the dip back. LiveKit needs use_send_side_bwe: true",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 76
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.5, sum by (le, direction) (increase(bench_layer_switch_seconds_bucket[2m])))",
+     "legendFormat": "p50 {{direction}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "histogram_quantile(0.95, sum by (le, direction) (increase(bench_layer_switch_seconds_bucket[2m])))",
+     "legendFormat": "p95 {{direction}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Layer switch missed",
+   "id": 33,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 76
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (direction) (increase(bench_layer_switch_missed_total[2m]))",
+     "legendFormat": "{{direction}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Unmute heard",
+   "id": 34,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "Speaker unmute -> first audio of that talk spurt at a listener (plans with speakers)",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 76
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.5, sum by (le) (increase(bench_unmute_heard_seconds_bucket[2m])))",
+     "legendFormat": "p50",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "histogram_quantile(0.95, sum by (le) (increase(bench_unmute_heard_seconds_bucket[2m])))",
+     "legendFormat": "p95",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "row",
+   "title": "SFU host (xFusion) \u2014 node_exporter job=node",
+   "id": 35,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 84
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "SFU CPU by mode (all cores)",
+   "id": 36,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 85
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 10,
+      "stacking": {
+       "mode": "normal"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "100 * sum by (mode) (rate(node_cpu_seconds_total{job=\"node\",mode!=\"idle\"}[$__rate_interval])) / scalar(count(node_cpu_seconds_total{job=\"node\",mode=\"idle\"}))",
+     "legendFormat": "{{mode}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "SFU per-core busy %",
+   "id": 37,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "IRQ cores should show softirq only; mediasoup: one line per pinned worker; a core at 100% = a saturated worker",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 85
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     },
+     "max": 100
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "100 * (1 - rate(node_cpu_seconds_total{job=\"node\",mode=\"idle\"}[$__rate_interval]))",
+     "legendFormat": "cpu{{cpu}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "SFU softirq per core",
+   "id": 38,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 85
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "100 * rate(node_cpu_seconds_total{job=\"node\",mode=\"softirq\"}[$__rate_interval])",
+     "legendFormat": "cpu{{cpu}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "SFU NIC packets/s",
+   "id": 39,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 93
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "pps",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(rate(node_network_receive_packets_total{job=\"node\"}[$__rate_interval]))",
+     "legendFormat": "rx",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "sum(rate(node_network_transmit_packets_total{job=\"node\"}[$__rate_interval]))",
+     "legendFormat": "tx",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "SFU NIC bits/s",
+   "id": 40,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 93
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bps",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(rate(node_network_receive_bytes_total{job=\"node\"}[$__rate_interval])) * 8",
+     "legendFormat": "rx",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "sum(rate(node_network_transmit_bytes_total{job=\"node\"}[$__rate_interval])) * 8",
+     "legendFormat": "tx",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "SFU drops (must stay 0)",
+   "id": 41,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 93
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "pps",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(rate(node_network_receive_drop_total{job=\"node\"}[$__rate_interval]))",
+     "legendFormat": "netdev rx drop",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "sum(rate(node_softnet_dropped_total{job=\"node\"}[$__rate_interval]))",
+     "legendFormat": "softnet dropped",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "C",
+     "expr": "sum(rate(node_softnet_times_squeezed_total{job=\"node\"}[$__rate_interval]))",
+     "legendFormat": "softnet squeezed",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "D",
+     "expr": "sum(rate(node_netstat_Udp_RcvbufErrors{job=\"node\"}[$__rate_interval]))",
+     "legendFormat": "UDP rcvbuf errors",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "E",
+     "expr": "sum by (device) (rate({job=\"node\",__name__=~\"node_ethtool_.*(rx_missed|rx_out_of_buffer|rx_discards|rx_dropped|missed).*\"}[$__rate_interval]))",
+     "legendFormat": "{{__name__}} {{device}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "row",
+   "title": "Generators \u2014 if these are saturated the step is INVALID",
+   "id": 42,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 101
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Generator CPU %",
+   "id": 43,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 102
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     },
+     "max": 100
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{job=\"node-gen\",mode=\"idle\"}[$__rate_interval])))",
+     "legendFormat": "{{instance}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Generator drops",
+   "id": 44,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 102
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "pps",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (instance) (rate(node_network_receive_drop_total{job=\"node-gen\"}[$__rate_interval]))",
+     "legendFormat": "{{instance}} netdev",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "sum by (instance) (rate(node_netstat_Udp_RcvbufErrors{job=\"node-gen\"}[$__rate_interval]))",
+     "legendFormat": "{{instance}} UDP rcvbuf",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Loadgen process",
+   "id": 45,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 102
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "rate(process_cpu_seconds_total{job=\"loadgen\"}[$__rate_interval])",
+     "legendFormat": "{{instance}} cores",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "go_goroutines{job=\"loadgen\"}",
+     "legendFormat": "{{instance}} goroutines",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Generator send lag p99 (INVALID above report.max_gen_send_lag)",
+   "id": 46,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "Publisher frame tick -> write returned, sampled. Rising = the generator is late and its numbers are not trustworthy",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 110
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.99, sum by (le, instance, kind) (rate(bench_gen_send_lag_seconds_bucket[$__rate_interval])))",
+     "legendFormat": "{{instance}} {{kind}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Generator NIC bits/s",
+   "id": 47,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 110
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bps",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (instance) (rate(node_network_receive_bytes_total{job=\"node-gen\"}[$__rate_interval])) * 8",
+     "legendFormat": "{{instance}} rx",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "sum by (instance) (rate(node_network_transmit_bytes_total{job=\"node-gen\"}[$__rate_interval])) * 8",
+     "legendFormat": "{{instance}} tx",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Loadgen memory",
+   "id": 48,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 110
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bytes",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "process_resident_memory_bytes{job=\"loadgen\"}",
+     "legendFormat": "{{instance}} RSS",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "go_memstats_heap_inuse_bytes{job=\"loadgen\"}",
+     "legendFormat": "{{instance}} heap",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "row",
+   "title": "SFU internals (one of these is empty depending on which SFU runs)",
+   "id": 49,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 118
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "mediasoup worker CPU % (per worker)",
+   "id": 50,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 119
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     },
+     "max": 100
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "100 * rate(mediasoup_worker_cpu_seconds_total[$__rate_interval])",
+     "legendFormat": "w{{worker}} cpu{{cpu}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "mediasoup consumers per worker",
+   "id": 51,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 119
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "mediasoup_worker_consumers",
+     "legendFormat": "w{{worker}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "mediasoup control plane",
+   "id": 52,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 119
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.95, sum by (le, method) (rate(mediasoup_rpc_duration_seconds_bucket[$__rate_interval])))",
+     "legendFormat": "rpc p95 {{method}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "rate(mediasoup_node_process_cpu_seconds_total[$__rate_interval])",
+     "legendFormat": "node cores",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "C",
+     "expr": "mediasoup_consumer_score_avg",
+     "legendFormat": "consumer score avg",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "LiveKit process CPU (cores) per instance",
+   "id": 53,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 127
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "rate(process_cpu_seconds_total{job=\"livekit\"}[$__rate_interval])",
+     "legendFormat": "{{instance}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "LiveKit Go runtime",
+   "id": 54,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 127
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "go_goroutines{job=\"livekit\"}",
+     "legendFormat": "{{instance}} goroutines",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "LiveKit GC pause (avg per GC)",
+   "id": 55,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 127
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "rate(go_gc_duration_seconds_sum{job=\"livekit\"}[$__rate_interval]) / rate(go_gc_duration_seconds_count{job=\"livekit\"}[$__rate_interval])",
+     "legendFormat": "{{instance}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,13 @@
+# 02-group-6 with VP9 SVC (L3T1) instead of VP8 simulcast. Needs vp9-*.ivf in
+# loadgen.media.dir: run scripts/make-media.sh with loadgen.media.codec: vp9 once.
+name: group-6-vp9
+codec: vp9
+rooms: 100
+maxParticipants: 6
+publishers: 6
+audio: true
+video: true
+add: 3
+every: 5m
+hold: 5m
+subscribe: {high: 20, medium: 50, low: 30}

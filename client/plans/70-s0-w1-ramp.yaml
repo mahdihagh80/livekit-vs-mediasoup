@@ -1,0 +1,32 @@
+# Stage 0 diagnostic run, W1: 1:1 calls, both people publish audio + VP9 SVC
+# (L3T3_KEY). Three load plateaus in one run so LiveKit is profiled healthy, near 80 % CPU
+# and past the knee on the 50-core layout (s14: 2,500 people = 25 of 50 cores).
+# Isolated mode on TWO generators (as plan 60): run on both at the same time, each with its
+# own loadgen.name_prefix (g1-, g2-), shared_rooms OFF.
+#
+# Per generator every 5 min 450 more full rooms join: 450 / 900 / 1350 rooms, so the fleet
+# has 1,800 / 3,600 / 5,400 people = about 36 % / 72 % / 108 % of the 50 cores (estimate).
+# Generators: 13.8 % CPU at 2,500 people in s14, so about 30 % at the top step.
+# Profiles: light set on every step from +190 s, heavy set
+# (mutex, block, trace) on steps 2 and 3 from +240 s. Those windows overlap the report's
+# measured window [settled + 120 s, end]; they are logged so they can be cut out.
+# Timeline: 15 s baseline + 2 x 5 min + 5 min hold + leave ≈ 17 min.
+name: s0-w1-ramp
+codec: vp9
+rooms: 1350
+maxParticipants: 2
+publishers: 2
+audio: true
+video: true
+addRooms: 450
+every: 5m
+hold: 5m
+subscribe: {high: 20, medium: 50, low: 30}
+networkTarget: all
+network:
+  - {name: clean, percent: 40}
+  - {name: mobile, percent: 15, delay: 60ms, jitter: 20ms, loss: 1}
+  - {name: dippy, percent: 15, dip: {kbps: 300, for: 15s, every: 1m}}
+  - {name: capped, percent: 10, kbps: 1000}
+  - {name: burst, percent: 10, burst: {loss: 5, length: 50ms}}
+  - {name: far, percent: 10, delay: 150ms, jitter: 30ms}

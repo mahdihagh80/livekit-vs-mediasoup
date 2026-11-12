@@ -1,0 +1,12 @@
+# 1000 calls of 2 people. Both publish. A room fills in one add.
+name: one-to-one
+rooms: 1000
+maxParticipants: 2
+publishers: 2
+audio: true
+video: true
+add: 2
+every: 5m
+hold: 5m
+# Layer each participant subscribes to (% of participants, must sum to 100).
+subscribe: {high: 20, medium: 50, low: 30}

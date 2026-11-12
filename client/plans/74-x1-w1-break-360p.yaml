@@ -1,0 +1,34 @@
+# Experiment 1, third attempt: W1 ramp to break with a lower send
+# quality. Same as plans/73 (1:1 calls, both people publish audio + VP9 SVC and subscribe to
+# each other, 1,500 more people every 2 minutes), but:
+#   - the generators publish TWO spatial layers (L2T3_KEY): 180p 150 kbps + 360p 400 kbps,
+#     about 550 kbps per publisher instead of 2,050. This is set in the generators' bench.yaml
+#     (loadgen.media.layers), set to 2 layers for this run.
+#     With two layers "high" = 360p; "medium" and "low" both get 180p.
+#   - 12 steps instead of 8, because less media per person should move the break point up:
+#     per generator 375 more full rooms (750 people) per step,
+#     fleet = 1,500 / 3,000 / ... / 18,000 people.
+# LiveKit: 92 logical CPUs (18-63,82-127), tuned baseline config with 92 UDP mux ports
+# (= GOMAXPROCS; livekit.tuned.debug.udp92.yaml). NIC: 4 queues per bond slave, 16 queue IRQs
+# on CPUs 0-15 (host/34-nic-4q.sh), HAProxy on 16-17,80-81.
+# Step timing as plans/73: clean window +35..+80 s, profiles from +82 s and +104 s.
+# Timeline: 15 s baseline + 11 x 2 min + 2 min hold + leave ≈ 25 min.
+name: x1-w1-break-360p
+codec: vp9
+rooms: 4500
+maxParticipants: 2
+publishers: 2
+audio: true
+video: true
+addRooms: 375
+every: 2m
+hold: 2m
+subscribe: {high: 20, medium: 50, low: 30}
+networkTarget: all
+network:
+  - {name: clean, percent: 40}
+  - {name: mobile, percent: 15, delay: 60ms, jitter: 20ms, loss: 1}
+  - {name: dippy, percent: 15, dip: {kbps: 300, for: 15s, every: 1m}}
+  - {name: capped, percent: 10, kbps: 1000}
+  - {name: burst, percent: 10, burst: {loss: 5, length: 50ms}}
+  - {name: far, percent: 10, delay: 150ms, jitter: 30ms}

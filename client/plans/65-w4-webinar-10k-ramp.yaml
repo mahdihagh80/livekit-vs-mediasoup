@@ -1,0 +1,36 @@
+# Generator calibration for W4: plan 63 ramped by viewers. Same room,
+# publishers, layer mix and network mix; the room grows in 5 steps instead of all at
+# once, so the report has one row per load level and shows where (if anywhere) a
+# generator crosses CPU 70 %, kernel drop 0.5 % or send lag p99 20 ms.
+# Shared rooms on TWO generators, as plan 63: run on both at the same time with
+# loadgen.shared_rooms {prefix: "w4-", shard: "1/2"} on gen-1 and {prefix: "w4-",
+# shard: "2/2"} on gen-2. Shard 1: the 3 publishers + half the viewers; shard 2: the
+# other half, starting viewer_delay (20 s) later; shard 1 holds that much longer.
+#
+# Every 4 min the room grows by 2001 people: 2001 / 4002 / 6003 / 8004 / 10003, so about
+# 1000 / 2000 / 3000 / 4000 / 5000 viewers per generator (3000 ... 15000 video
+# subscriptions per generator; step 1 is about plan 51's top load per generator). The last
+# step holds 9 min, like plan 63, so step 5 is plan 63's load measured the same way.
+# Each step is measured over [settled + report.warmup 120 s, end]: 2 min per ramp step,
+# 7 min in the hold.
+# Timeline: 15 s baseline + 4 x 4 min + 9 min hold + leave ≈ 26 min.
+name: w4-webinar-10k-ramp
+codec: vp9
+rooms: 1
+maxParticipants: 10003
+publishers: 3
+audio: true
+video: true
+add: 2001         # levels 2001, 4002, 6003, 8004, then the full 10003
+every: 4m
+hold: 9m
+subscribe: {high: 20, medium: 50, low: 30}
+# Network mix: as plan 63.
+networkTarget: all
+network:
+  - {name: clean, percent: 40}
+  - {name: mobile, percent: 15, delay: 60ms, jitter: 20ms, loss: 1}
+  - {name: dippy, percent: 15, dip: {kbps: 300, for: 15s, every: 1m}}
+  - {name: capped, percent: 10, kbps: 1000}
+  - {name: burst, percent: 10, burst: {loss: 5, length: 50ms}}
+  - {name: far, percent: 10, delay: 150ms, jitter: 30ms}

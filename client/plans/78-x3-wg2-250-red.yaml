@@ -1,0 +1,26 @@
+# Experiment 3c: plans/77 (TWO group rooms, 250 / 500 / 750 / 1,000 people per room, 10 publishers each)
+# with audio as audio/red (RFC 2198), like browsers send it: every audio packet carries the current
+# Opus frame plus the previous one (165 bytes of payload instead of 80), publishers send RED and every
+# client accepts it, so LiveKit forwards RED on all 10 audio tracks of every viewer.
+# Everything else is plans/77: VP9 SVC 180p 150 kbps + 360p 400 kbps, the same network mix,
+# shared rooms on two generators (prefix "x3wg2r-"), 60 s steps, 2 min hold.
+name: x3-wg2-250-red
+red: true
+codec: vp9
+rooms: 2
+maxParticipants: 1000
+publishers: 10
+audio: true
+video: true
+add: 250
+every: 1m
+hold: 2m
+subscribe: {high: 20, medium: 50, low: 30}
+networkTarget: all
+network:
+  - {name: clean, percent: 40}
+  - {name: mobile, percent: 15, delay: 60ms, jitter: 20ms, loss: 1}
+  - {name: dippy, percent: 15, dip: {kbps: 300, for: 15s, every: 1m}}
+  - {name: capped, percent: 10, kbps: 1000}
+  - {name: burst, percent: 10, burst: {loss: 5, length: 50ms}}
+  - {name: far, percent: 10, delay: 150ms, jitter: 30ms}

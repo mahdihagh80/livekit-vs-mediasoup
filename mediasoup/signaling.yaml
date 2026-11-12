@@ -1,0 +1,12 @@
+# Signaling config for the SFU host.
+# events_listen must match media.yaml events_url. CPU plan: see media.yaml header
+# (signaling has its own cores, separate from the Node media process).
+# Clients connect to wss://sfu.example.com/ws. HAProxy terminates TLS on :443
+# and forwards to this loopback listener.
+control_cpus: "9-10"
+listen: 127.0.0.1:18080
+# Public port (443-450 range is open) so a laptop Prometheus can scrape it.
+metrics_listen: 0.0.0.0:447
+events_listen: 127.0.0.1:18081
+media_url: http://127.0.0.1:3100
+consume_concurrency: 512

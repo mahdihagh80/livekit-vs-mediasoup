@@ -1,0 +1,73 @@
+# Not a fairness-reviewed config. A/B runs use media.tuned.20c.yaml.
+# ONLY FOR THE mediasoup 3.31 IMAGE. libwebrtc field trials were removed in
+# mediasoup 3.32 (new built-in BWE), and the 3.32+ image refuses to start with
+# this file. Kept for re-running the 3.31 A/B; do not copy it forward.
+# Tuned copy of media.yaml (3.31 era): identical except libwebrtc_field_trials at the end.
+# Start with (3.31 image only): MEDIA_CONFIG=media.tuned-3.31.yaml docker compose -f compose.yaml up -d
+# Media service config for the SFU host (NIC on ens2f*, NUMA node 0).
+# Physical cores only (HT siblings 64-127 stay idle):
+#   0-7 NIC IRQs, 8 Node media, 9-10 Go signaling, 11-12 HAProxy, 13 housekeeping,
+#   14-63 one mediasoup-worker each (50; 14-31 on NUMA0, 32-63 on NUMA1).
+# control_cpus is the Node process; worker_cpus is one mediasoup-worker each.
+# cpu_budget must equal control_cpus + worker_cpus.
+worker_cpus: "14-63"
+rpc_listen: 127.0.0.1:3100
+# Public port (443-450 range is open) so a laptop Prometheus can scrape it.
+metrics_listen: 0.0.0.0:446
+listen_ip: 203.0.113.10
+announced_address: 203.0.113.10
+socket_buffer_bytes: 16777216
+# Room placement:
+#   webinar     publishers of a room on one worker (+ up to max_subs_per_worker
+#               subscribers); more subscribers on new workers fed by pipes.
+#               Each worker serves one room only.
+#   one_to_one  whole room on one random worker.
+#   capacity    load-unit admission control below.
+scheduler: webinar
+max_subs_per_worker: 300
+# capacity scheduler only from here to peer_reserve.
+router_max_peers: 200
+# Admission control: a worker takes at most worker_capacity load units.
+# Joins/produces/consumes that would go over are rejected.
+# One worker (one physical core) holds 400 units: ~13 full 10-peer rooms (~29 units each).
+worker_capacity: 400
+load_weights:
+  producer: 1
+  consumer: 1.5
+  pipe_consumer: 2
+  pipe_producer: 1
+# Units held per joining peer until its streams exist (3 = one A/V subscription).
+peer_reserve: 3
+rtc_base_port: 44444
+worker_log_level: warn
+enable_tcp: false
+# bps. 3 Mbps lets the 1.5 Mbps top layer through immediately. BWE takes over after that.
+initial_outgoing_bitrate: 3000000
+media_codecs:
+  - kind: audio
+    mimeType: audio/opus
+    clockRate: 48000
+    channels: 2
+  - kind: video
+    mimeType: video/VP8
+    clockRate: 90000
+    parameters:
+      x-google-start-bitrate: 1000
+  - kind: video
+    mimeType: video/VP9
+    clockRate: 90000
+    parameters:
+      profile-id: 0
+events_url: http://127.0.0.1:18081/internal/events
+control_cpus: "8"
+cpu_budget: "8,14-63"
+# --- BWE tuning (A/B against media.yaml) ---
+# libwebrtc field trials for the worker's GoogCC. Without this key the worker runs
+# mediasoup's default "WebRTC-Bwe-AlrLimitedBackoff/Enabled/". This keeps that and adds:
+#   BweRapidRecoveryExperiment  after a BWE drop (<5 s old), probe straight back to 85%
+#                               of the pre-drop rate instead of climbing additively.
+#   Bwe-AlrProbing alr_interval while the link is under-used (ALR), probe at 2x the
+#                               estimate every 2 s instead of every 5 s, so a viewer
+#                               whose dip ended finds headroom sooner.
+# A malformed string aborts every worker at startup.
+libwebrtc_field_trials: "WebRTC-Bwe-AlrLimitedBackoff/Enabled/WebRTC-BweRapidRecoveryExperiment/Enabled/WebRTC-Bwe-AlrProbing/alr_interval:2s/"

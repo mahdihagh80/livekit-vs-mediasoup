@@ -1,0 +1,33 @@
+# Plan 49 + a network-profile mix (from plan 40). 50 rooms x 50, VP9 SVC (L3T1), 3 pubs/room,
+# split over TWO generators in isolated mode: run this plan on both at the same
+# time, each with its own loadgen.name_prefix (g1-, g2-). Each generator makes
+# 25 rooms x 50, so the fleet is 50 rooms / 2500 participants / 150 publishers.
+# Publishers send audio + VP9 video (cumulative ~150/550/2050 kbps); the other
+# 47 per room only subscribe. Run once per SFU (LiveKit, mediasoup).
+#
+# Per generator: 75 producers (upload ≈ 0.16 Gbps), 3675 video subscriptions
+# (47x3 + 3x2 per room x 25); at the 20/50/30 layer mix ≈ 0.73 Mbps each, so
+# download ≈ 2.7 Gbps video + audio. SFU total: ~0.3 Gbps in, ~5.7 Gbps out.
+# Room size 50 (~150 subscriptions) is far below 500 subs/room, so mediasoup
+# stays on the capacity scheduler; router_max_peers 200 is not hit.
+# Timeline: 15 s baseline + one join step + 5 min hold + leave ≈ 6 min.
+# Network mix (viewers only; the 3 publishers per room stay clean). Shaping runs
+# inside the loadgen on each viewer's downlink (loss, rate cap, dips, delay/jitter);
+# profile per viewer is fixed by position, so both SFUs get the same viewers impaired.
+name: rooms-50x50-vp9-3pub-split-net
+codec: vp9
+rooms: 25
+maxParticipants: 50
+publishers: 3
+audio: true
+video: true
+add: 50           # one step: everyone joins at once (publishers first)
+every: 5m
+hold: 5m
+# Layer each participant subscribes to (% of participants, must sum to 100).
+subscribe: {high: 20, medium: 50, low: 30}
+network:
+  - {name: clean, percent: 50}
+  - {name: mobile, percent: 20, delay: 60ms, jitter: 20ms, loss: 1}
+  - {name: dippy, percent: 15, dip: {kbps: 300, for: 15s, every: 1m}}
+  - {name: capped, percent: 15, kbps: 1000}

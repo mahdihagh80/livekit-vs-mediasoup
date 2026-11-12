@@ -1,0 +1,76 @@
+# Single-machine try-out: SFU, one agent and the controller on the same host.
+# cp examples/local.yaml bench.yaml
+# Not for measurements. Only checks that everything works.
+hosts:
+  sfu_ip: 127.0.0.1                # LiveKit doesn't offer loopback candidates: for a local LiveKit
+                                   # test use this machine's LAN IP here (and in mediasoup.media.listen_ip)
+  gen_ips: [127.0.0.1]
+  ctl_host: 127.0.0.1
+  node_exporter_monitoring_port: 9100
+
+nic:
+  sfu: {name: lo, slaves: []}
+  gen: {name: lo, slaves: []}
+
+cpu:
+  sfu_irq: "0"
+  sfu: "0-1"
+  gen_irq: "0"
+  gen: "0-1"
+
+monitoring:
+  prometheus_url: http://127.0.0.1:9090
+  scrape_interval: 5s
+  retention: 7d
+
+livekit:
+  version: 1.13.11
+  bin: /tmp/sfu-bench/livekit-server     # livekit/get-binary.sh installs here
+  base_config: livekit/livekit.base.yaml
+  api_key: benchkey
+  api_secret: local-secret-0123456789abcdefghijklmnop
+  url: ""                                # wss://host when HAProxy fronts LiveKit. Empty = ws://sfu_ip:http_port_base
+  layouts: ["1x2", "2x1"]
+  active_layout: "1x2"
+  http_port_base: 7880
+  tcp_port_base: 7881
+  udp_port_base: 7882
+  port_step: 10
+  monitoring_port_base: 6789
+
+mediasoup:
+  control_cpus: "0"
+  worker_cpus: "1"                 # 1 worker; use "" + num_workers: 2 to test pipeToRouter unpinned
+  media:
+    rpc_listen: 127.0.0.1:3100
+    monitoring_listen: 0.0.0.0:9310
+    events_url: http://127.0.0.1:8081/internal/events   # = signaling.events_listen
+    listen_ip: 127.0.0.1
+    announced_address: ""
+    rtc_base_port: 44444
+    router_max_peers: 3            # small, so rooms spread over workers even in the smoke test
+    initial_outgoing_bitrate: 3000000 # not read by any code; the media service reads mediasoup/media*.yaml (MEDIA_CONFIG)
+    worker_log_level: warn
+  signaling:
+    listen: 0.0.0.0:8080           # clients connect to sfu_ip:8080
+    monitoring_listen: 0.0.0.0:9311
+    events_listen: 127.0.0.1:8081        # loopback only: events from the media service + health probe
+    media_url: http://127.0.0.1:3100
+
+loadgen:
+  media:
+    dir: media
+    duration: 20s
+    fps: 30
+    keyframe_interval: 60
+    layers:
+      - {rid: q, width: 320,  height: 180, kbps: 150}
+      - {rid: h, width: 640,  height: 360, kbps: 400}
+      - {rid: f, width: 1280, height: 720, kbps: 1500}
+  monitoring_port: 9200
+  freeze_threshold: 200ms
+  ice_loopback: true             # needed when the SFU announces 127.0.0.1
+  ice_local_ips: ["127.0.0.1"]
+  debug_sdp: false
+  report:
+    warmup: 10s

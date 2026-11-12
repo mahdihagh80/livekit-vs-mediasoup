@@ -1,0 +1,27 @@
+# Functional check of audio-only rooms (video: false), which plans 40-42 leave
+# out. Run on both generators side by side (isolated rooms: name_prefix g1- /
+# g2-). Not a capacity test. 10 voice rooms of 10 per generator: 2 people
+# always talk, 3 speakers take turns (1 at a time, every 20 s; the others send
+# DTX silence), 5 listen, a third of the listeners on a mobile network. 10% of
+# the listeners churn every minute; recovery here waits for audio.
+# Timeline: 15 s baseline + 1 min + 3 min hold ≈ 4.5 min.
+name: features-audio
+rooms: 10
+maxParticipants: 10
+publishers: 2
+speakers: 3
+unmuted: 1
+rotate: 20s
+audio: true
+video: false
+add: 5
+every: 1m
+hold: 3m
+churn: {percent: 10, every: 1m}
+network:
+  - {name: clean, percent: 67}
+  - {name: mobile, percent: 33, delay: 60ms, jitter: 20ms, loss: 1}
+events:
+  - {at: 30s, type: netloss, for: 5s, percent: 50}
+  - {at: 1m30s, type: massRejoin, percent: 30}
+  - {at: 2m15s, type: publisherReconnect}

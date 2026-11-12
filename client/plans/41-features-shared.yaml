@@ -1,0 +1,27 @@
+# Functional check of shared rooms: 4 classes of 60 filled by TWO generators
+# together. Run on both at the same time with loadgen.shared_rooms
+# {prefix: "feat-", shard: "1/2"} on gen-1 and {prefix: "feat-", shard: "2/2"}
+# on gen-2. Numbers are for both together: shard 1 has the teacher (camera +
+# screen), the 4 speakers and half the viewers, shard 2 the other half.
+# A third of the viewers are on a capped link with dips.
+# Timeline: 15 s baseline + 20 s viewer_delay + 2 x 2 min + 4 min hold ≈ 8.5 min.
+name: features-shared
+rooms: 4
+maxParticipants: 60
+publishers: 1
+speakers: 4
+unmuted: 1
+rotate: 20s
+screenShare: true
+audio: true
+video: true
+add: 20
+every: 2m
+hold: 4m
+subscribe: {high: 20, medium: 50, low: 30}
+network:
+  - {name: clean, percent: 67}
+  - {name: weak, percent: 33, kbps: 1200, dip: {kbps: 300, for: 10s, every: 1m}}
+events:
+  - {at: 1m, type: massRejoin, percent: 20}
+  - {at: 2m30s, type: publisherReconnect}

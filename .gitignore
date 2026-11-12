@@ -1,0 +1,10 @@
+/bench.yaml
+tools/bin/
+results/
+**/run/
+mediasoup/media/node_modules/
+mediasoup/media/dist/
+mediasoup/signaling/ms-signaling
+loadgen/loadgen
+monitoring/prometheus/data/
+monitoring/prometheus/prometheus.yml

@@ -1,0 +1,135 @@
+# sfu-bench configuration: the ONLY config file. Every program (Node, Go) and
+# every script reads it. Copy and edit once, then put the SAME file on all hosts:
+#   cp bench.yaml.example bench.yaml && vi bench.yaml
+#   scp bench.yaml gen-1:/bench/ ; scp bench.yaml gen-2:/bench/
+#
+# Programs take it with --config / -config (default: ../bench.yaml relative to
+# the program's directory, i.e. the repo root). No environment variables are used.
+# Scripts read it with yq (mikefarah v4); see tools/get-yq.sh.
+
+# ---- hosts ---------------------------------------------------------------------
+hosts:
+  sfu_ip: 10.0.0.10                # xFusion server (system under test), data-plane IP
+  gen_ips: [10.0.0.11, 10.0.0.12]  # client/load-generator servers (40 Gb). Agent i = gen_ips[i]
+  ctl_host: 10.0.0.11              # where ctl + Prometheus run (gen-1 is fine). No Grafana on bench hosts
+  node_exporter_monitoring_port: 9100
+
+# ---- NICs ------------------------------------------------------------------------
+nic:
+  sfu:
+    name: bond1                    # SFU data NIC (carries the RTP)
+    slaves: []                     # physical NICs if `name` is a bond, e.g. [ens1f0, ens1f1]
+  gen:
+    name: ens1f0
+    slaves: []
+
+# ---- CPU plan (see docs/02-sfu-server-prep.md) -------------------------------------
+# NIC interrupts get their own cores on the NIC's NUMA node. BOTH SFUs then get
+# exactly the same cpu.sfu cores, so the comparison is core-for-core.
+cpu:
+  sfu_irq: "0-15"
+  sfu: "16-63"
+  gen_irq: "0-15"                  # generators: NIC interrupt cores
+  gen: "16-63"                     # generators: loadgen process
+
+# ---- time sync -------------------------------------------------------------------
+chrony:
+  server: 10.0.0.10                # generators sync to this host (default: the SFU)
+
+# ---- monitoring --------------------------------------------------------------------
+monitoring:
+  prometheus_url: http://127.0.0.1:9090  # bench Prometheus on ctl_host; also its listen address. Keep loopback:
+                                         # no UI is exposed, view via `ssh -L` or monitoring/export.sh + view-local.sh
+  scrape_interval: 5s
+  retention: 90d
+  gen_gateway_port: 30699                # every generator: metrics-gw (HAProxy) serves /loadgen/metrics and
+                                         # /node/metrics here, so one port per generator can be scraped from outside
+
+# ---- LiveKit -------------------------------------------------------------------------
+livekit:
+  version: 1.13.11                       # open-source release; native: livekit/get-binary.sh installs it at `bin`
+                                         # docker: keep docker/livekit/Dockerfile LIVEKIT_IMAGE on the same version
+  bin: /opt/sfu-bench/livekit-server
+  base_config: livekit/livekit.base.yaml # production config + [bench] changes; ports/keys/node_ip injected per instance
+  api_key: benchkey
+  api_secret: change-me-to-a-long-random-secret-0123456789
+  url: ""                                # wss://host when HAProxy fronts LiveKit. Empty = ws://sfu_ip:http_port_base
+  layouts: ["1x48", "3x16", "6x8"]       # "<instances>x<cores>" carved out of cpu.sfu; livekit/start.sh
+  active_layout: "1x48"                  # livekit/start.sh when no layout argument is given
+  # instance i uses base + i*port_step
+  http_port_base: 7880
+  tcp_port_base: 7881
+  udp_port_base: 7882
+  port_step: 10
+  monitoring_port_base: 6789                # instance i: monitoring_port_base + i
+
+# ---- mediasoup -------------------------------------------------------------------------
+mediasoup:
+  control_cpus: "16-17"                  # Node media service + Go signaling
+  worker_cpus: "18-63"                   # one mediasoup-worker pinned per CPU. control+worker must equal cpu.sfu
+
+  media:                                 # Node service (mediasoup/media)
+    rpc_listen: 127.0.0.1:3100           # internal RPC, only signaling calls it (not 3000: Grafana default)
+    monitoring_listen: 0.0.0.0:9310
+    events_url: http://127.0.0.1:8081/internal/events   # = signaling.events_listen
+    listen_ip: 0.0.0.0
+    announced_address: ""                # "" = hosts.sfu_ip
+    rtc_base_port: 44444                 # worker i: UDP rtc_base_port + i (WebRtcServer)
+    socket_buffer_bytes: 16777216
+    router_max_peers: 200                # peers per router before a room grows onto another worker
+    initial_outgoing_bitrate: 3000000    # not read by any code; the media service reads mediasoup/media*.yaml (MEDIA_CONFIG)
+    enable_tcp: false
+    worker_log_level: warn               # debug | warn | error | none
+    num_workers: 0                       # only used if worker_cpus is "" (0 = all cores, not pinned)
+
+  signaling:                             # Go service (mediasoup/signaling)
+    # url: wss://sfu.example.com/ws    # if set, loadgen dials this (wss + Host). Else the line below.
+    listen: 0.0.0.0:8080                 # clients connect to ws://<sfu_ip>:<port>/ws
+    monitoring_listen: 0.0.0.0:9311
+    events_listen: 127.0.0.1:8081        # loopback only: events from the media service + health probe
+    media_url: http://127.0.0.1:3100
+    consume_concurrency: 512             # max in-flight server-driven consume RPCs
+
+# ---- load generator ------------------------------------------------------------------------
+loadgen:
+  media:                                 # what every simulated publisher sends (same bytes to both SFUs)
+    dir: media                           # IVF files, relative to client/. Generate: client/scripts/make-media.sh
+    codec: vp8                           # vp8 = simulcast. vp9 = one SVC stream (L<n>T3_KEY, TIDs marked by the sender), file vp9-<height>.ivf
+    duration: 20s                        # length of each file (it loops)
+    fps: 30
+    keyframe_interval: 60                # frames (2 s at 30 fps); keyframes are also sent on PLI/FIR
+    layers:                              # low -> high, 1..3 layers. File: <codec>-<height>.ivf
+      - {rid: q, width: 320,  height: 180, kbps: 150}
+      - {rid: h, width: 640,  height: 360, kbps: 400}
+      - {rid: f, width: 1280, height: 720, kbps: 1500}
+
+  name_prefix: ""                      # in front of every room/participant name; set a different one
+                                       # per generator ("g1-", "g2-") so several can load one SFU
+  # shared_rooms: several generators fill the SAME rooms (one big webinar/class across hosts).
+  # Unset (default) = isolated: each generator has its own rooms (name_prefix + "room_N").
+  # Every generator runs the same plan with the same prefix and its own shard "k/N":
+  # shard 1 creates the rooms (all publishers + speakers + its share of viewers),
+  # shards 2..N add viewers, dealt round-robin. Plan numbers are then for the whole fleet.
+  # shared_rooms: {prefix: "class-", shard: "1/2", viewer_delay: 20s}
+                                       # viewer_delay: shards 2..N wait this long (after the baseline)
+                                       # so shard 1's publishers are in; shard 1 holds this much longer
+  monitoring_port: 9200                # Prometheus metrics for this process
+  freeze_threshold: 200ms              # inter-frame gap counted as a freeze
+  max_inflight_joins: 200
+  ice_loopback: false                  # true only for single-host tests
+  ice_local_ips: []                    # required: local addresses to advertise
+  debug_sdp: false                     # log every SDP the mediasoup adapter builds (very noisy)
+
+  report:
+    warmup: 60s                          # excluded at the start of each step's hold
+    max_gen_cpu: 70                      # generator CPU % above which a step is INVALID
+    max_gen_drop: 0.5                    # % of received packets the generator kernel may drop (softnet + UDP buffers) before a step is INVALID
+    max_gen_send_lag: 20ms               # publisher frame tick -> write p99 above this = generator late, step INVALID
+    slo:                                 # the pass line per step: FIX BEFORE RUNNING, same for both SFUs
+      video_delay_p95: 100ms
+      audio_delay_p95: 60ms
+      video_jitter_p95: 30ms
+      loss_ratio: 0.01
+      freeze_ratio: 0.01
+      join_success: 0.995
+      min_video_ratio: 0.8                  # each requested layer: received kbps/track >= 0.8 x that layer's kbps

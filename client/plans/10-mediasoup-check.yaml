@@ -1,0 +1,21 @@
+# Functional check of a running mediasoup (sfu.example.com, 203.0.113.10), < 5 min.
+# Not a capacity test: it checks the whole path over HAProxy/TLS on 443
+# (join, publish, server-driven consume, the requested layer arriving) on a
+# 3-step ramp.
+#
+# Timeline: 15 s baseline + step 1 (60 s) + step 2 (60 s) + step 3 hold (90 s)
+#           + disconnect + 15 s before the report  ≈ 4 min.
+# Load at the top: 5 rooms x 6 = 30 participants, 15 publishers.
+#   generator upload   ≈ 15 x 2.1 Mbps ≈ 32 Mbps
+#   generator download ≈ 75 video tracks x ~0.55 Mbps (20/50/30 mix) ≈ 41 Mbps (+ audio)
+name: mediasoup-check
+rooms: 5
+maxParticipants: 6
+publishers: 3
+audio: true
+video: true
+add: 2            # steps: 10 -> 20 -> 30 participants (2, 4, 6 per room)
+every: 60s
+hold: 90s
+# Layer each participant subscribes to (% of participants, must sum to 100).
+subscribe: {high: 20, medium: 50, low: 30}

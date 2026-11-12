@@ -1,0 +1,35 @@
+# Functional check of every plan option at once, small enough to run on both
+# generators side by side (isolated rooms: name_prefix g1- / g2-). Not a
+# capacity test. 10 rooms of 12 per generator: 2 camera publishers (publisher 1
+# also shares a screen), 3 audio-only speakers (1 talks, the turn moves every
+# 20 s), 7 viewers on mixed networks. 10% of the viewers churn every minute and
+# four disturbances hit during hold. Every report table should have rows:
+# per-profile, disturbances (netloss, massRejoin, publisherReconnect, churn,
+# layer switch, unmute heard).
+# Timeline: 15 s baseline + 2 min + 6 min hold ≈ 8.5 min.
+name: features
+rooms: 10
+maxParticipants: 12
+publishers: 2
+speakers: 3
+unmuted: 1
+rotate: 20s
+screenShare: true
+audio: true
+video: true
+add: 6
+every: 2m
+hold: 6m
+subscribe: {high: 20, medium: 50, low: 30}
+rejoin: true
+churn: {percent: 10, every: 1m}
+network:
+  - {name: clean, percent: 50}
+  - {name: mobile, percent: 20, delay: 60ms, jitter: 20ms, loss: 1}
+  - {name: dippy, percent: 15, dip: {kbps: 300, for: 15s, every: 1m}}
+  - {name: capped, percent: 15, kbps: 1000}
+events:
+  - {at: 1m, type: netloss, for: 5s, percent: 50}
+  - {at: 2m, type: netloss, for: 40s, percent: 10}     # long enough to drop the transport
+  - {at: 3m30s, type: massRejoin, percent: 30}
+  - {at: 5m, type: publisherReconnect}

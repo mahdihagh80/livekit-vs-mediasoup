@@ -1,0 +1,34 @@
+# W2, group call, 100 rooms: plan 61 with 50 rooms per generator
+# instead of 40. 100 rooms x 30, 6 video publishers per room (audio + VP9 SVC L3T1); the
+# other 24 only subscribe. Run on TWO generators at the same time (g1-, g2-), each runs
+# 50 rooms, so the fleet is 3000 participants / 600 producers.
+#
+# Per generator: 300 producers (upload ≈ 0.6 Gbps), 8700 video subscriptions
+# (24x6 + 6x5 per room x 50) ≈ 0.73 Mbps each (download ≈ 6.4 Gbps + audio).
+# SFU total ≈ 1.2 Gbps in, 12.7 Gbps out by layer bitrates.
+# Join storm: plan 61 failed with everyone joining at once (signaling -> media RPC timed out
+# after 15 s). Run this plan with loadgen.max_inflight_joins: 20 in bench.yaml on both
+# generators (40 joins in flight for the fleet instead of 400); one step, as plan 61.
+# Timeline: 15 s baseline, one step, hold 9 min, leave. report.warmup 120s.
+name: w2-group-100x30
+codec: vp9
+rooms: 50
+maxParticipants: 30
+publishers: 6
+audio: true
+video: true
+add: 30           # one step: everyone joins
+every: 9m
+hold: 9m
+subscribe: {high: 20, medium: 50, low: 30}
+# Network mix. networkTarget all: everyone's SUBSCRIBE
+# connection (SFU -> person) gets a profile by position, publishers included; publish
+# connections stay clean both ways. Same people impaired on both SFUs.
+networkTarget: all
+network:
+  - {name: clean, percent: 40}
+  - {name: mobile, percent: 15, delay: 60ms, jitter: 20ms, loss: 1}
+  - {name: dippy, percent: 15, dip: {kbps: 300, for: 15s, every: 1m}}
+  - {name: capped, percent: 10, kbps: 1000}
+  - {name: burst, percent: 10, burst: {loss: 5, length: 50ms}}
+  - {name: far, percent: 10, delay: 150ms, jitter: 30ms}

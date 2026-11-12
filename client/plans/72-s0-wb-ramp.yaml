@@ -1,0 +1,29 @@
+# Stage 0 diagnostic run, WB: ONE webinar room, 3 video publishers (audio +
+# VP9 SVC L3T3_KEY), viewers added in three steps so LiveKit is profiled healthy, near W3's
+# load and at W4's failing load on the 50-core layout (s14: 3,003 = 66.5 % CPU and PASS,
+# 5,003 = 93.7 % and FAIL on delay, loss, freezes).
+# Shared rooms on TWO generators: loadgen.shared_rooms {prefix: "s0wb-", shard: "1/2"} on
+# gen-1 and {prefix: "s0wb-", shard: "2/2"} on gen-2 (as plan 63).
+#
+# Every 5 min the room grows by 1,701: 1,701 / 3,402 / 5,103 people = about 40 % / 72 % / 95 %.
+# Generators: about 17 % CPU per 1,000 viewers per generator, so about 45 % at the top step.
+# Profiles: as plan 70. Timeline: 15 s baseline + 2 x 5 min + 5 min hold + leave ≈ 17 min.
+name: s0-wb-ramp
+codec: vp9
+rooms: 1
+maxParticipants: 5103
+publishers: 3
+audio: true
+video: true
+add: 1701
+every: 5m
+hold: 5m
+subscribe: {high: 20, medium: 50, low: 30}
+networkTarget: all
+network:
+  - {name: clean, percent: 40}
+  - {name: mobile, percent: 15, delay: 60ms, jitter: 20ms, loss: 1}
+  - {name: dippy, percent: 15, dip: {kbps: 300, for: 15s, every: 1m}}
+  - {name: capped, percent: 10, kbps: 1000}
+  - {name: burst, percent: 10, burst: {loss: 5, length: 50ms}}
+  - {name: far, percent: 10, delay: 150ms, jitter: 30ms}

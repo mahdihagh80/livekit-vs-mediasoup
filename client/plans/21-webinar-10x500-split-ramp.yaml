@@ -1,0 +1,22 @@
+# 20 webinar rooms split over TWO generators, ramped: run this plan on both at the
+# same time, each with its own loadgen.name_prefix (g1-, g2-). Each generator makes
+# 10 rooms of 3 publishers (audio + simulcast video) and 500 subscribers, and adds
+# 101 people to every room every 2 minutes (the 3 publishers join in step 1).
+#
+# Per generator and step: +1010 participants, ~+1500 video tracks received (~+0.8 Gbps).
+# Per generator at full size: 5030 participants, upload ≈ 30 x 2.1 Mbps ≈ 63 Mbps,
+# download ≈ 15000 video tracks ≈ 8.3 Gbps (13-webinar-1x3000, 3000 tracks, already
+# dropped 0.45% rx on gen-1, so the generator may be the limit here).
+# Total at the SFU: 60 publishers in, ~30000 video + ~30000 audio tracks out, ≈ 16.6 Gbps.
+# Timeline: 15 s baseline + 4 x 2 min + 10 min hold + disconnect + 15 s ≈ 19 min.
+name: webinar-10x500-split-ramp
+rooms: 10
+maxParticipants: 503
+publishers: 3
+audio: true
+video: true
+add: 101          # per room and step -> 1010, 2020, 3030, 4040, 5030
+every: 2m
+hold: 10m
+# Layer each participant subscribes to (% of participants, must sum to 100).
+subscribe: {high: 20, medium: 50, low: 30}

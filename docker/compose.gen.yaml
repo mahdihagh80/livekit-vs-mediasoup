@@ -1,0 +1,103 @@
+# Client / load-generator hosts (gen-1, gen-2). Config: bench.yaml in the repo
+# root (mounted at /bench), the SAME file on every host. The only environment variables
+# are the Go GC settings in x-common (see the comment there).
+#
+# Every generator:
+#   docker compose -f docker/compose.gen.yaml build
+#   docker compose -f docker/compose.gen.yaml run --rm make-media    # once, then copy client/media/ to the other gen
+#   docker compose -f docker/compose.gen.yaml up -d agent
+#
+# Controller host (hosts.ctl_host, usually gen-1), additionally:
+#   docker compose -f docker/compose.gen.yaml run --rm render-monitoring
+#   docker compose -f docker/compose.gen.yaml --profile monitoring up -d   # Prometheus only, on prometheus_url
+#   monitoring/export.sh results/<run>                                     # TSDB tarball to download
+#   docker compose -f docker/compose.gen.yaml run --rm scenario mediasoup client/plans/00-smoke.yaml <run-name>
+#   docker compose -f docker/compose.gen.yaml run --rm scenario livekit:1x48 client/plans/00-smoke.yaml <run-name>
+#   (unnamed: add -e ALLOW_UNNAMED=1; no SFU snapshot, not for A/B runs)
+#   docker compose -f docker/compose.gen.yaml run --rm cli compare results/<run-a> results/<run-b>
+
+name: sfu-bench-gen
+
+x-common: &common
+  image: sfu-bench/loadgen:local
+  network_mode: host
+  restart: "no"
+  init: true
+  ulimits:
+    nofile: {soft: 1048576, hard: 1048576}
+  volumes:
+    - ..:/bench               # bench.yaml, plans, media, results (written as root)
+  working_dir: /bench
+  # Go GC: with the default GOGC=100 a 2500-participant plan collected every 2.5 s and the
+  # send ticker lagged 27-32 ms p99 (ab13 mediasoup leg, 2026-11-06). The hosts have 1 TiB,
+  # so collect 8x less often; GOMEMLIMIT is a soft cap that makes GC run harder near 64 GiB.
+  environment:
+    GOGC: "800"
+    GOMEMLIMIT: "200GiB"
+
+services:
+  # One plan in this container: docker compose run --rm agent mediasoup client/plans/00-smoke.yaml
+  agent:
+    <<: *common
+    build:
+      context: ..
+      dockerfile: docker/client/Dockerfile
+    entrypoint: ["run-agent.sh"]
+    stop_grace_period: 60s    # agent disconnects everyone on SIGTERM (<= 500/s)
+    logging:
+      driver: json-file
+      options: {max-size: "100m", max-file: "3"}
+
+  # ---- one-shot tools (docker compose run --rm <name> ...) -----------------------------
+  scenario:                   # scripts/run-scenario.sh: run one plan
+    <<: *common
+    profiles: [tools]
+    entrypoint: ["bash", "/bench/scripts/run-scenario.sh"]
+    # HAProxy on the SFU sends sfu.example.com to mediasoup and every other *.example.com
+    # name to LiveKit, so LiveKit runs use this name (livekit.url: wss://livekit.example.com).
+    extra_hosts: ["livekit.example.com:203.0.113.10"]
+
+  cli:                        # any loadgen command: ctl, report, compare, urls, run
+    <<: *common
+    profiles: [tools]
+    entrypoint: ["loadgen"]
+
+  make-media:                 # IVF simulcast layers from loadgen.media
+    <<: *common
+    profiles: [tools]
+    entrypoint: ["bash", "/bench/client/scripts/make-media.sh"]
+
+  render-monitoring:          # prometheus.yml + args from bench.yaml
+    <<: *common
+    profiles: [tools]
+    entrypoint: ["bash", "/bench/monitoring/render.sh"]
+
+  # ---- monitoring (controller host only) -----------------------------------------------
+  # Port, retention and scrape targets come from monitoring/prometheus/{args,prometheus.yml},
+  # written by render-monitoring from bench.yaml. Re-render + restart after editing bench.yaml.
+  prometheus:
+    profiles: [monitoring]
+    image: docker.io/prom/prometheus:v3.5.0
+    network_mode: host
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "-c", "exec /bin/prometheus $$(cat /etc/prometheus/args)"]
+    volumes:
+      - ../monitoring/prometheus:/etc/prometheus:ro
+      - prom-data:/prometheus
+  # No Grafana on bench hosts: monitoring/export.sh here, monitoring/view-local.sh on a laptop.
+
+  # ---- metrics gateway (every generator) -------------------------------------------------
+  # This host's loadgen + node_exporter on one port (monitoring.gen_gateway_port), for scraping
+  # from outside through the SFU host's HAProxy. Config written by render-monitoring:
+  #   docker compose -f docker/compose.gen.yaml run --rm render-monitoring
+  #   docker compose -f docker/compose.gen.yaml --profile gateway up -d metrics-gw
+  metrics-gw:
+    profiles: [gateway]
+    image: docker.io/library/haproxy:3.2-alpine
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - ../monitoring/gen-gw:/usr/local/etc/haproxy:ro
+
+volumes:
+  prom-data:

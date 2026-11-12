@@ -1,0 +1,12 @@
+# 100 rooms of 6. Everyone publishes. Each room fills 3, then 6.
+name: group-6
+rooms: 100
+maxParticipants: 6
+publishers: 6
+audio: true
+video: true
+add: 3
+every: 5m
+hold: 5m
+# Layer each participant subscribes to (% of participants, must sum to 100).
+subscribe: {high: 20, medium: 50, low: 30}

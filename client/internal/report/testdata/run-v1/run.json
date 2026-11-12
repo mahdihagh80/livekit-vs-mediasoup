@@ -1,0 +1,11 @@
+{
+  "name_prefix": "",
+  "plan": {"name":"bwe","rooms":2,"maxParticipants":4,"publishers":1,"audio":true,"video":true,"add":4,"every":"30s","hold":"1m0s","subscribe":{"high":100,"medium":0,"low":0},"churn":{"percent":0,"every":"0s"},"network":[{"name":"clean","percent":50,"dip":{"kbps":0,"for":"0s","every":"0s"}},{"name":"lossy","percent":50,"delay":"50ms","loss":3,"dip":{"kbps":0,"for":"0s","every":"0s"}}]},
+  "room_prefix": "",
+  "run": "mediasoup-bwe-old",
+  "sfu": "mediasoup",
+  "shard": "1/1",
+  "shared_rooms": false,
+  "started": "2026-11-04T14:10:28.745709247Z",
+  "url": "ws://sfu.test:4443"
+}

@@ -1,0 +1,19 @@
+# Functional check of VP9 SVC (L3T1): 10 rooms of 6, 3 publishers, a third of
+# the viewers capped at 600 kbps so the SFU has to drop spatial layers.
+# Needs vp9-*.ivf in loadgen.media.dir (scripts/make-media.sh with
+# loadgen.media.codec: vp9).
+# Timeline: 15 s baseline + 2 min + 3 min hold ≈ 5.5 min.
+name: features-vp9
+codec: vp9
+rooms: 10
+maxParticipants: 6
+publishers: 3
+audio: true
+video: true
+add: 3
+every: 2m
+hold: 3m
+subscribe: {high: 20, medium: 50, low: 30}
+network:
+  - {name: clean, percent: 67}
+  - {name: capped, percent: 33, kbps: 600}

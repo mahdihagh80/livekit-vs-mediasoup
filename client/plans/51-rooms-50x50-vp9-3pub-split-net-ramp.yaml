@@ -1,0 +1,28 @@
+# Plan 50 ramped by rooms: the same rooms, publishers, layer mix and network mix,
+# but the rooms join in 5 steps instead of all at once, so the report has one row
+# per load level (fleet 500 / 1000 / 1500 / 2000 / 2500 participants) and
+# "Capacity at SLO" means something. Run on both generators at the same time,
+# each with its own loadgen.name_prefix (g1-, g2-), like plan 50.
+#
+# Per generator: every 3 min the next 5 rooms join in full (3 publishers first,
+# then 47 viewers), up to 25 rooms; then hold 5 min at the full load.
+# Each step is measured over [settled + warmup 60 s, end]: 2 min per ramp step,
+# 4 min in the hold. Load at the last step = plan 50.
+# Timeline: 15 s baseline + 4 x 3 min + 5 min hold + leave ≈ 18 min.
+name: rooms-50x50-vp9-3pub-split-net-ramp
+codec: vp9
+rooms: 25
+maxParticipants: 50
+publishers: 3
+audio: true
+video: true
+addRooms: 5       # step = 5 more full rooms per generator (10 rooms, 500 participants fleet-wide)
+every: 3m
+hold: 5m
+# Layer each participant subscribes to (% of participants, must sum to 100).
+subscribe: {high: 20, medium: 50, low: 30}
+network:
+  - {name: clean, percent: 50}
+  - {name: mobile, percent: 20, delay: 60ms, jitter: 20ms, loss: 1}
+  - {name: dippy, percent: 15, dip: {kbps: 300, for: 15s, every: 1m}}
+  - {name: capped, percent: 15, kbps: 1000}

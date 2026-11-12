@@ -1,0 +1,11 @@
+.git
+**/node_modules
+**/dist
+**/run
+results
+tools/bin
+loadgen/loadgen
+loadgen/media
+mediasoup/signaling/ms-signaling
+monitoring/prometheus/data
+bench.yaml

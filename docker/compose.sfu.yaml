@@ -1,0 +1,74 @@
+# SFU host (xFusion). Run exactly ONE profile at a time:
+#
+# Image names below are placeholders. Replace them with the images you ship,
+# then:
+#   docker compose -f docker/compose.sfu.yaml --profile livekit   up -d
+#   docker compose -f docker/compose.sfu.yaml --profile livekit   down
+#   docker compose -f docker/compose.sfu.yaml --profile mediasoup up -d
+#   docker compose -f docker/compose.sfu.yaml --profile mediasoup down
+#
+# mediasoup reads mediasoup/media.yaml and mediasoup/signaling.yaml, mounted
+# at /config. LiveKit still reads bench.yaml from the repo mount. Nothing is
+# set via environment variables or compose interpolation; edit the file and recreate.
+#
+# Fairness rules baked in (see docs/08-docker.md):
+#   - network_mode: host   no docker bridge/NAT/veth in the media path, same as native
+#   - no cpus/cpuset limits; mediasoup pins from control_cpus / worker_cpus in its
+#     two yaml files, LiveKit from cpu.sfu in bench.yaml
+#   - restart: "no"        a crashed SFU must invalidate the run, not silently restart
+#   - host prep (sysctl, NIC/IRQ, chrony, node_exporter) still runs ON THE HOST: host/*.sh
+
+name: sfu-bench-sfu
+
+x-common: &common
+  network_mode: host
+  restart: "no"
+  init: true
+  ulimits:
+    nofile: {soft: 1048576, hard: 1048576}
+  volumes:
+    - ..:/bench               # repo: bench.yaml, host/lib.sh, livekit base config, run/ files
+  logging:
+    driver: json-file
+    options: {max-size: "100m", max-file: "3"}
+
+services:
+  # ---- LiveKit (open-source release, see docker/livekit/Dockerfile) -------------------
+  # Layout: livekit.active_layout in bench.yaml. For the layout sweep, change it
+  # and run `up -d --force-recreate livekit`.
+  livekit:
+    <<: *common
+    profiles: [livekit]
+    image: dummy.local/livekit:latest
+    stop_grace_period: 30s
+
+  # ---- mediasoup -------------------------------------------------------------------
+  mediasoup-media:
+    <<: *common
+    profiles: [mediasoup]
+    image: dummy.local/mediasoup-media:latest
+    command: ["run-media.sh", "/config/media.yaml"]
+    volumes:
+      - ../mediasoup/media.yaml:/config/media.yaml:ro
+    stop_grace_period: 20s
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "media"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+
+  mediasoup-signaling:
+    <<: *common
+    profiles: [mediasoup]
+    image: dummy.local/mediasoup-signaling:latest
+    command: ["run-signaling.sh", "/config/signaling.yaml"]
+    volumes:
+      - ../mediasoup/signaling.yaml:/config/signaling.yaml:ro
+    depends_on:
+      mediasoup-media: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "signaling"]
+      interval: 5s
+      timeout: 3s
+      retries: 6

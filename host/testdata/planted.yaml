@@ -1,0 +1,5 @@
+# fake: the secret value also sits under a harmless key, so stripping must fail closed
+livekit:
+  api_secret: fake-planted-77
+notes:
+  remark: fake-planted-77

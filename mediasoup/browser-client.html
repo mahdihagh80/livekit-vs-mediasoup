@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>mediasoup browser check</title>
+  <style>
+    body { font: 14px/1.4 sans-serif; margin: 24px; background: #111; color: #eee; }
+    label { display: block; margin: 8px 0; }
+    input { width: 28rem; max-width: 100%; }
+    button { margin-right: 8px; }
+    video, audio { background: #000; margin: 8px 8px 0 0; }
+    video { width: 320px; height: 180px; }
+    #log { white-space: pre-wrap; color: #9cf; margin-top: 16px; }
+    .err { color: #f88; }
+  </style>
+</head>
+<body>
+  <h1>mediasoup</h1>
+  <p>Open two tabs, use the same room name, and each one should see the other.</p>
+  <label>Signaling <input id="url" value="wss://sfu.example.com/ws"></label>
+  <label>Room <input id="room" value="browser-test"></label>
+  <label>Name <input id="name" value=""></label>
+  <p>
+    <button id="join">Join</button>
+    <button id="leave" disabled>Leave</button>
+  </p>
+  <div>
+    <video id="local" autoplay muted playsinline></video>
+    <div id="remote"></div>
+  </div>
+  <div id="log"></div>
+  <script type="module">
+    import { Device } from 'https://esm.sh/mediasoup-client@3.16.5';
+
+    const logEl = document.querySelector('#log');
+    const log = (m, err) => {
+      logEl.insertAdjacentHTML('beforeend', `<div class="${err ? 'err' : ''}">${m}</div>`);
+    };
+
+    document.querySelector('#name').value = 'browser-' + Math.random().toString(36).slice(2, 8);
+
+    let ws, device, sendTransport, recvTransport, localStream;
+    const consumers = new Map();
+    const pending = new Map();
+    let nextId = 1;
+    let consumerQueue = [];
+
+    function request(method, data) {
+      const id = nextId++;
+      return new Promise((resolve, reject) => {
+        pending.set(id, { resolve, reject });
+        ws.send(JSON.stringify({ id, method, data: data ?? {} }));
+      });
+    }
+
+    async function onNotification(msg) {
+      if (msg.method === 'newConsumer') {
+        if (!recvTransport) consumerQueue.push(msg.data);
+        else await consume(msg.data);
+        return;
+      }
+      if (msg.method === 'consumerClosed') {
+        const c = consumers.get(msg.data.consumerId);
+        if (!c) return;
+        c.consumer.close();
+        c.el.remove();
+        consumers.delete(msg.data.consumerId);
+        log('closed ' + msg.data.consumerId);
+      }
+    }
+
+    async function consume(data) {
+      const consumer = await recvTransport.consume({
+        id: data.id,
+        producerId: data.producerId,
+        kind: data.kind,
+        rtpParameters: data.rtpParameters,
+      });
+      const el = document.createElement(data.kind === 'video' ? 'video' : 'audio');
+      el.autoplay = true;
+      el.playsInline = true;
+      el.srcObject = new MediaStream([consumer.track]);
+      document.querySelector('#remote').append(el);
+      consumers.set(consumer.id, { consumer, el });
+      // Resume before play(). A paused video consumer sends no frames, and
+      // Chrome leaves video.play() pending until the first frame arrives.
+      await request('resumeConsumer', { consumerId: consumer.id });
+      el.play().catch(() => {});
+      log('receiving ' + data.kind + ' from ' + data.producerPeerId);
+    }
+
+    function wireTransport(transport) {
+      transport.on('connect', ({ dtlsParameters }, callback, errback) => {
+        request('connectWebRtcTransport', { transportId: transport.id, dtlsParameters })
+          .then(() => callback())
+          .catch(errback);
+      });
+      transport.on('connectionstatechange', (state) => {
+        log(transport.id.slice(0, 8) + ' ' + state);
+      });
+    }
+
+    async function openLocalMedia() {
+      const attempts = [
+        { audio: true, video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 15 } } },
+        { audio: true, video: true },
+        { audio: true, video: false },
+      ];
+      for (const constraints of attempts) {
+        try {
+          return await navigator.mediaDevices.getUserMedia(constraints);
+        } catch (e) {
+          const what = constraints.video ? 'camera' : 'microphone';
+          log('could not open ' + what + ': ' + e.message, true);
+        }
+      }
+      log('joining without a microphone or camera', true);
+      return null;
+    }
+
+    document.querySelector('#join').onclick = async () => {
+      const room = document.querySelector('#room').value.trim();
+      const name = document.querySelector('#name').value.trim();
+      const base = document.querySelector('#url').value.trim();
+      document.querySelector('#join').disabled = true;
+      try {
+        localStream = await openLocalMedia();
+        if (localStream) document.querySelector('#local').srcObject = localStream;
+
+        const role = localStream ? 'publisher' : 'subscriber'; // webinar scheduler places by it
+        ws = new WebSocket(`${base}?roomId=${encodeURIComponent(room)}&peerId=${encodeURIComponent(name)}&role=${role}`);
+        ws.onmessage = (ev) => {
+          const msg = JSON.parse(ev.data);
+          if (msg.notification) {
+            onNotification(msg).catch((e) => log(e.message, true));
+            return;
+          }
+          const p = pending.get(msg.id);
+          if (!p) return;
+          pending.delete(msg.id);
+          msg.ok ? p.resolve(msg.data) : p.reject(new Error(msg.error || msg.method));
+        };
+        await new Promise((resolve, reject) => {
+          ws.onopen = resolve;
+          ws.onerror = () => reject(new Error('websocket failed'));
+        });
+        log('signaling open');
+
+        const caps = await request('getRouterRtpCapabilities');
+        device = new Device();
+        await device.load({ routerRtpCapabilities: caps.rtpCapabilities });
+
+        const recvInfo = await request('createWebRtcTransport', { direction: 'recv' });
+        recvTransport = device.createRecvTransport(recvInfo);
+        wireTransport(recvTransport);
+        for (const data of consumerQueue) await consume(data);
+        consumerQueue = [];
+
+        await request('join', { rtpCapabilities: device.rtpCapabilities });
+        log('joined ' + room + ' as ' + name);
+
+        const tracks = localStream ? localStream.getTracks() : [];
+        if (tracks.length) {
+          const sendInfo = await request('createWebRtcTransport', { direction: 'send' });
+          sendTransport = device.createSendTransport(sendInfo);
+          wireTransport(sendTransport);
+          sendTransport.on('produce', ({ kind, rtpParameters }, callback, errback) => {
+            request('produce', { transportId: sendTransport.id, kind, rtpParameters })
+              .then(({ id }) => callback({ id }))
+              .catch(errback);
+          });
+          for (const track of tracks) {
+            await sendTransport.produce({ track });
+            log('publishing ' + track.kind);
+          }
+        }
+        document.querySelector('#leave').disabled = false;
+      } catch (e) {
+        log(e.message, true);
+        document.querySelector('#join').disabled = false;
+      }
+    };
+
+    document.querySelector('#leave').onclick = () => {
+      ws?.close();
+      sendTransport?.close();
+      recvTransport?.close();
+      localStream?.getTracks().forEach((t) => t.stop());
+      document.querySelector('#remote').replaceChildren();
+      document.querySelector('#local').srcObject = null;
+      document.querySelector('#join').disabled = false;
+      document.querySelector('#leave').disabled = true;
+      log('left');
+    };
+  </script>
+</body>
+</html>

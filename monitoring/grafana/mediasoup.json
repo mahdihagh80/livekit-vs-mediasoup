@@ -1,0 +1,2727 @@
+{
+ "title": "mediasoup",
+ "uid": "mediasoup",
+ "editable": true,
+ "schemaVersion": 39,
+ "time": {
+  "from": "now-1h",
+  "to": "now"
+ },
+ "refresh": "10s",
+ "tags": [
+  "sfu-bench",
+  "mediasoup"
+ ],
+ "templating": {
+  "list": [
+   {
+    "name": "ds",
+    "type": "datasource",
+    "query": "prometheus",
+    "label": "Prometheus (bench)"
+   },
+   {
+    "name": "worker",
+    "type": "query",
+    "label": "Worker",
+    "datasource": {
+     "type": "prometheus",
+     "uid": "${ds}"
+    },
+    "refresh": 2,
+    "multi": true,
+    "includeAll": true,
+    "current": {
+     "text": "All",
+     "value": "$__all"
+    },
+    "sort": 3,
+    "query": {
+     "query": "label_values(mediasoup_worker_consumers, worker)",
+     "refId": "worker"
+    },
+    "definition": "label_values(mediasoup_worker_consumers, worker)"
+   },
+   {
+    "name": "profile",
+    "type": "query",
+    "label": "Network profile",
+    "datasource": {
+     "type": "prometheus",
+     "uid": "${ds}"
+    },
+    "refresh": 2,
+    "multi": true,
+    "includeAll": true,
+    "current": {
+     "text": "All",
+     "value": "$__all"
+    },
+    "sort": 1,
+    "query": {
+     "query": "label_values(bench_peer_info, profile)",
+     "refId": "profile"
+    },
+    "definition": "label_values(bench_peer_info, profile)"
+   },
+   {
+    "name": "peer",
+    "type": "query",
+    "label": "Viewer",
+    "datasource": {
+     "type": "prometheus",
+     "uid": "${ds}"
+    },
+    "refresh": 2,
+    "multi": true,
+    "includeAll": false,
+    "sort": 1,
+    "description": "For the per-viewer panels of the BWE row",
+    "query": {
+     "query": "label_values(bench_peer_info{profile=~\"$profile\"}, peer)",
+     "refId": "peer"
+    },
+    "definition": "label_values(bench_peer_info{profile=~\"$profile\"}, peer)"
+   }
+  ]
+ },
+ "panels": [
+  {
+   "type": "row",
+   "title": "Overview",
+   "id": 1,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 0
+   }
+  },
+  {
+   "type": "stat",
+   "title": "Rooms",
+   "id": 2,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 4,
+    "w": 3,
+    "x": 0,
+    "y": 1
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "blue",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ]
+    },
+    "colorMode": "value",
+    "graphMode": "area"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "max(mediasoup_rooms)",
+     "legendFormat": "",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "stat",
+   "title": "WebSocket connections",
+   "id": 3,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 4,
+    "w": 3,
+    "x": 3,
+    "y": 1
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "blue",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ]
+    },
+    "colorMode": "value",
+    "graphMode": "area"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(mssig_ws_connections)",
+     "legendFormat": "",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "stat",
+   "title": "Peers",
+   "id": 4,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 4,
+    "w": 3,
+    "x": 6,
+    "y": 1
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "blue",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ]
+    },
+    "colorMode": "value",
+    "graphMode": "area"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(mediasoup_worker_peers)",
+     "legendFormat": "",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "stat",
+   "title": "Transports",
+   "id": 5,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 4,
+    "w": 3,
+    "x": 9,
+    "y": 1
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "blue",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ]
+    },
+    "colorMode": "value",
+    "graphMode": "area"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(mediasoup_worker_transports)",
+     "legendFormat": "",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "stat",
+   "title": "Producers",
+   "id": 6,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "Includes pipe producers between workers",
+   "gridPos": {
+    "h": 4,
+    "w": 3,
+    "x": 12,
+    "y": 1
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "blue",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ]
+    },
+    "colorMode": "value",
+    "graphMode": "area"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(mediasoup_worker_producers)",
+     "legendFormat": "",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "stat",
+   "title": "Consumers",
+   "id": 7,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "Includes pipe consumers between workers",
+   "gridPos": {
+    "h": 4,
+    "w": 3,
+    "x": 15,
+    "y": 1
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "blue",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ]
+    },
+    "colorMode": "value",
+    "graphMode": "area"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(mediasoup_worker_consumers)",
+     "legendFormat": "",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "stat",
+   "title": "Busiest worker CPU",
+   "id": 8,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "A worker is one thread on one core: at ~100% it starts dropping/delaying packets",
+   "gridPos": {
+    "h": 4,
+    "w": 3,
+    "x": 18,
+    "y": 1
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "yellow",
+        "value": 70
+       },
+       {
+        "color": "red",
+        "value": 90
+       }
+      ]
+     },
+     "decimals": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ]
+    },
+    "colorMode": "value",
+    "graphMode": "area"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "max(100 * rate(mediasoup_worker_cpu_seconds_total[$__rate_interval]))",
+     "legendFormat": "",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "stat",
+   "title": "Consumer score avg",
+   "id": 9,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "mediasoup's 0..10 score over a random consumer sample (10 = no loss)",
+   "gridPos": {
+    "h": 4,
+    "w": 3,
+    "x": 21,
+    "y": 1
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "red",
+        "value": null
+       },
+       {
+        "color": "yellow",
+        "value": 7
+       },
+       {
+        "color": "green",
+        "value": 9
+       }
+      ]
+     },
+     "decimals": 1
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ]
+    },
+    "colorMode": "value",
+    "graphMode": "area"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "avg(mediasoup_consumer_score_avg)",
+     "legendFormat": "",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "row",
+   "title": "Workers (one mediasoup-worker process per pinned core)",
+   "id": 10,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 5
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Worker CPU % (per worker)",
+   "id": 11,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "user+sys from /proc. Softirq for this core is not included \u2014 see the SFU dashboard",
+   "gridPos": {
+    "h": 8,
+    "w": 12,
+    "x": 0,
+    "y": 6
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     },
+     "max": 100,
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "100 * rate(mediasoup_worker_cpu_seconds_total{worker=~\"$worker\"}[$__rate_interval])",
+     "legendFormat": "w{{worker}} cpu{{cpu}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Worker CPU: max / avg / min",
+   "id": 12,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "A wide max-avg gap means placement is unbalanced: one worker saturates while others idle",
+   "gridPos": {
+    "h": 8,
+    "w": 12,
+    "x": 12,
+    "y": 6
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     },
+     "max": 100,
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "max(100 * rate(mediasoup_worker_cpu_seconds_total[$__rate_interval]))",
+     "legendFormat": "max",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "avg(100 * rate(mediasoup_worker_cpu_seconds_total[$__rate_interval]))",
+     "legendFormat": "avg",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "C",
+     "expr": "min(100 * rate(mediasoup_worker_cpu_seconds_total[$__rate_interval]))",
+     "legendFormat": "min",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Consumers per worker",
+   "id": 13,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 14
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "mediasoup_worker_consumers{worker=~\"$worker\"}",
+     "legendFormat": "w{{worker}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Peers per worker",
+   "id": 14,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 14
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "mediasoup_worker_peers{worker=~\"$worker\"}",
+     "legendFormat": "w{{worker}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Transports per worker",
+   "id": 15,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 14
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "mediasoup_worker_transports{worker=~\"$worker\"}",
+     "legendFormat": "w{{worker}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Producers per worker",
+   "id": 16,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 22
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "mediasoup_worker_producers{worker=~\"$worker\"}",
+     "legendFormat": "w{{worker}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Routers per worker",
+   "id": 17,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 22
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "mediasoup_worker_routers{worker=~\"$worker\"}",
+     "legendFormat": "w{{worker}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Worker RSS",
+   "id": 18,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 22
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bytes",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "mediasoup_worker_rss_bytes{worker=~\"$worker\"}",
+     "legendFormat": "w{{worker}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Consumer imbalance (max / avg)",
+   "id": 19,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "1.0 = perfectly balanced",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 30
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "max(mediasoup_worker_consumers) / avg(mediasoup_worker_consumers)",
+     "legendFormat": "max/avg consumers",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "max(rate(mediasoup_worker_cpu_seconds_total[$__rate_interval])) / avg(rate(mediasoup_worker_cpu_seconds_total[$__rate_interval]))",
+     "legendFormat": "max/avg CPU",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "CPU per consumer (\u00b5s of worker CPU per consumer-second)",
+   "id": 20,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "Efficiency: should stay flat as load grows. Rising = per-packet overhead growing (cache, pipes, NACK storms)",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 30
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "\u00b5s",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "1e6 * sum(rate(mediasoup_worker_cpu_seconds_total[$__rate_interval])) / sum(mediasoup_worker_consumers)",
+     "legendFormat": "all workers",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Pipes created (pipeToRouter)",
+   "id": 21,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "A room that outgrows one router gets piped to another worker",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 30
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(rate(mediasoup_pipes_created_total[$__rate_interval]))",
+     "legendFormat": "pipes/s",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "sum(mediasoup_pipes_created_total)",
+     "legendFormat": "total",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "row",
+   "title": "Media quality (server side)",
+   "id": 22,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 38
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Consumer score",
+   "id": 23,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 39
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     },
+     "max": 10,
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "avg(mediasoup_consumer_score_avg)",
+     "legendFormat": "avg score (0..10)",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Consumers with score < 7",
+   "id": 24,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 39
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "100 * avg(mediasoup_consumer_score_low_ratio)",
+     "legendFormat": "% of sample",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "ICE / DTLS state changes",
+   "id": 25,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "disconnected/failed/closed while load is steady = transports dying",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 39
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ops",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (state) (rate(mediasoup_ice_state_changes_total[$__rate_interval]))",
+     "legendFormat": "ice {{state}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "sum by (state) (rate(mediasoup_dtls_state_changes_total[$__rate_interval]))",
+     "legendFormat": "dtls {{state}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "row",
+   "title": "BWE vs link (media.yaml bwe_telemetry: true; profile/peer from the loadgen)",
+   "id": 26,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 47
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Estimate, sent and link limit \u2014 $peer",
+   "id": 27,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "est = mediasoup's send-side estimate for this viewer (bwe trace, ~100 ms updates, scraped every 5 s); sent = all bytes to the viewer incl. RTX, probes, RTCP; limit = the generator's downlink shaper (dippy: only during dips)",
+   "gridPos": {
+    "h": 8,
+    "w": 16,
+    "x": 0,
+    "y": 48
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bps",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "mediasoup_peer_bwe_available_bps{peer=~\"$peer\"}",
+     "legendFormat": "est {{peer}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "rate(mediasoup_peer_sent_bytes_total{peer=~\"$peer\",kind=\"all\"}[$__rate_interval]) * 8",
+     "legendFormat": "sent {{peer}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "C",
+     "expr": "bench_peer_link_bps{peer=~\"$peer\"}",
+     "legendFormat": "limit {{peer}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Forwarded spatial layer \u2014 $peer",
+   "id": 28,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "Lowest spatial layer over the viewer's video consumers; -1 = no video forwarded",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 48
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     },
+     "max": 2,
+     "min": -1
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "mediasoup_peer_video_layer{peer=~\"$peer\"}",
+     "legendFormat": "{{peer}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Estimate \u00f7 limit by profile",
+   "id": 29,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "Across the profile's viewers while a limit applies. > 1: the estimate is above what the link carries",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 56
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "quantile by (profile) (0.5, mediasoup_peer_bwe_available_bps / on(peer) group_left(profile) bench_peer_link_bps{profile=~\"$profile\"})",
+     "legendFormat": "p50 {{profile}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "quantile by (profile) (0.95, mediasoup_peer_bwe_available_bps / on(peer) group_left(profile) bench_peer_link_bps{profile=~\"$profile\"})",
+     "legendFormat": "p95 {{profile}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "C",
+     "expr": "vector(1)",
+     "legendFormat": "= limit",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Sent \u00f7 limit by profile",
+   "id": 30,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "Averaged over $__rate_interval, so short bursts above the limit are hidden: see scripts/bwe_analyze.py for 1 s resolution",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 56
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "quantile by (profile) (0.5, (rate(mediasoup_peer_sent_bytes_total{kind=\"all\"}[$__rate_interval]) * 8) / on(peer) group_left(profile) bench_peer_link_bps{profile=~\"$profile\"})",
+     "legendFormat": "p50 {{profile}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "quantile by (profile) (0.95, (rate(mediasoup_peer_sent_bytes_total{kind=\"all\"}[$__rate_interval]) * 8) / on(peer) group_left(profile) bench_peer_link_bps{profile=~\"$profile\"})",
+     "legendFormat": "p95 {{profile}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "C",
+     "expr": "vector(1)",
+     "legendFormat": "= limit",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Viewers with estimate > limit",
+   "id": 31,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 56
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     },
+     "max": 100,
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "100 * avg by (profile) ((mediasoup_peer_bwe_available_bps / on(peer) group_left(profile) bench_peer_link_bps{profile=~\"$profile\"}) > bool 1)",
+     "legendFormat": "{{profile}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Estimate by profile (all viewers)",
+   "id": 32,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "Includes clean and loss/delay-only profiles: their estimate should stay high",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 64
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bps",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "quantile by (profile) (0.05, mediasoup_peer_bwe_available_bps * on(peer) group_left(profile) bench_peer_info{profile=~\"$profile\"})",
+     "legendFormat": "p5 {{profile}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "quantile by (profile) (0.5, mediasoup_peer_bwe_available_bps * on(peer) group_left(profile) bench_peer_info{profile=~\"$profile\"})",
+     "legendFormat": "p50 {{profile}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "RTX and probe share of bytes sent",
+   "id": 33,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 64
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "100 * sum by (profile) (rate(mediasoup_peer_sent_bytes_total{kind=\"rtx\"}[$__rate_interval]) * on(peer) group_left(profile) bench_peer_info{profile=~\"$profile\"}) / sum by (profile) (rate(mediasoup_peer_sent_bytes_total{kind=\"all\"}[$__rate_interval]) * on(peer) group_left(profile) bench_peer_info{profile=~\"$profile\"})",
+     "legendFormat": "rtx {{profile}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "100 * sum by (profile) (rate(mediasoup_peer_sent_bytes_total{kind=\"probation\"}[$__rate_interval]) * on(peer) group_left(profile) bench_peer_info{profile=~\"$profile\"}) / sum by (profile) (rate(mediasoup_peer_sent_bytes_total{kind=\"all\"}[$__rate_interval]) * on(peer) group_left(profile) bench_peer_info{profile=~\"$profile\"})",
+     "legendFormat": "probe {{profile}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Viewers on the top layer",
+   "id": 34,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "Of viewers with video forwarded; top = the highest layer any viewer gets now",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 64
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     },
+     "max": 100,
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "100 * avg by (profile) (((mediasoup_peer_video_layer * on(peer) group_left(profile) bench_peer_info{profile=~\"$profile\"}) >= 0) == bool scalar(max(mediasoup_peer_video_layer)))",
+     "legendFormat": "{{profile}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "BWE trace events",
+   "id": 35,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "Sanity: ~10/s per viewer with video. 0 = bwe_telemetry off",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 72
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ops",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(rate(mediasoup_bwe_trace_events_total[$__rate_interval]))",
+     "legendFormat": "events/s",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "row",
+   "title": "Control plane (signaling + media RPC)",
+   "id": 36,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 80
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Media RPC latency p95 by method",
+   "id": 37,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 81
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.95, sum by (le, method) (rate(mediasoup_rpc_duration_seconds_bucket[$__rate_interval])))",
+     "legendFormat": "{{method}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Media RPC rate by method",
+   "id": 38,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 81
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "reqps",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (method) (rate(mediasoup_rpc_duration_seconds_count[$__rate_interval]))",
+     "legendFormat": "{{method}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Media RPC latency (all methods)",
+   "id": 39,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 81
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.5, sum by (le) (rate(mediasoup_rpc_duration_seconds_bucket[$__rate_interval])))",
+     "legendFormat": "p50",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "histogram_quantile(0.95, sum by (le) (rate(mediasoup_rpc_duration_seconds_bucket[$__rate_interval])))",
+     "legendFormat": "p95",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "C",
+     "expr": "histogram_quantile(0.99, sum by (le) (rate(mediasoup_rpc_duration_seconds_bucket[$__rate_interval])))",
+     "legendFormat": "p99",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Signaling request latency p95 by method",
+   "id": 40,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "Client request \u2192 reply, including the media RPC",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 89
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.95, sum by (le, method) (rate(mssig_request_duration_seconds_bucket[$__rate_interval])))",
+     "legendFormat": "{{method}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Signaling \u2192 media RPC p95 by method",
+   "id": 41,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "Compare with media-side RPC latency: the gap is HTTP/queueing between the two processes",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 89
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.95, sum by (le, method) (rate(mssig_media_rpc_duration_seconds_bucket[$__rate_interval])))",
+     "legendFormat": "{{method}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Signaling errors",
+   "id": 42,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "Must stay 0",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 89
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ops",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (method) (rate(mssig_request_duration_seconds_count{ok=\"false\"}[$__rate_interval]))",
+     "legendFormat": "request {{method}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "sum by (method) (rate(mssig_media_rpc_duration_seconds_count{ok=\"false\"}[$__rate_interval]))",
+     "legendFormat": "media rpc {{method}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "C",
+     "expr": "sum(rate(mssig_dropped_messages_total[$__rate_interval]))",
+     "legendFormat": "dropped msgs (send queue full)",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Server-driven consumes",
+   "id": 43,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 97
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ops",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (ok) (rate(mssig_server_consumes_total[$__rate_interval]))",
+     "legendFormat": "ok={{ok}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Signaling rooms / connections",
+   "id": 44,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 97
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(mssig_rooms)",
+     "legendFormat": "rooms",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "sum(mssig_ws_connections)",
+     "legendFormat": "ws connections",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "row",
+   "title": "Media service Node process (control thread)",
+   "id": 45,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 105
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Node CPU (cores)",
+   "id": 46,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "Single-threaded: ~1 core = control plane saturated (joins/RPC queue up)",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 106
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 10,
+      "stacking": {
+       "mode": "normal"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "rate(mediasoup_node_process_cpu_user_seconds_total[$__rate_interval])",
+     "legendFormat": "user",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "rate(mediasoup_node_process_cpu_system_seconds_total[$__rate_interval])",
+     "legendFormat": "system",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Event loop lag",
+   "id": 47,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 106
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "mediasoup_node_nodejs_eventloop_lag_p50_seconds",
+     "legendFormat": "p50",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "mediasoup_node_nodejs_eventloop_lag_p99_seconds",
+     "legendFormat": "p99",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "C",
+     "expr": "mediasoup_node_nodejs_eventloop_lag_max_seconds",
+     "legendFormat": "max",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Node memory",
+   "id": 48,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 106
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bytes",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "mediasoup_node_process_resident_memory_bytes",
+     "legendFormat": "rss",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "mediasoup_node_nodejs_heap_size_used_bytes",
+     "legendFormat": "heap used",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "C",
+     "expr": "mediasoup_node_nodejs_heap_size_total_bytes",
+     "legendFormat": "heap total",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "D",
+     "expr": "mediasoup_node_nodejs_external_memory_bytes",
+     "legendFormat": "external",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "GC time per second by kind",
+   "id": 49,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 114
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (kind) (rate(mediasoup_node_nodejs_gc_duration_seconds_sum[$__rate_interval]))",
+     "legendFormat": "{{kind}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Open file descriptors",
+   "id": 50,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 114
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "mediasoup_node_process_open_fds",
+     "legendFormat": "open",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "mediasoup_node_process_max_fds",
+     "legendFormat": "max",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Active libuv handles",
+   "id": 51,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 114
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "mediasoup_node_nodejs_active_handles_total",
+     "legendFormat": "handles",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "mediasoup_node_nodejs_active_requests_total",
+     "legendFormat": "requests",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  }
+ ]
+}

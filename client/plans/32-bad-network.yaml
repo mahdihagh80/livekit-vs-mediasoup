@@ -1,0 +1,20 @@
+# group-6 with a third of the viewers on bad links: does the SFU pick a lower
+# layer when the downlink dips, and how fast does it go back up?
+# Look at: bench_layer_switch_seconds{direction=down|up}, bench_layer_switch_missed_total,
+# bench_sub_layer_frames_total{delivered=lower} and the per-profile rows.
+# Impairment is inside the loadgen (downlink only); no tc, no root.
+name: bad-network
+rooms: 100
+maxParticipants: 6
+publishers: 6
+audio: true
+video: true
+add: 3
+every: 2m
+hold: 8m
+subscribe: {high: 60, medium: 30, low: 10}
+network:
+  - {name: clean, percent: 67}
+  - {name: lossy, percent: 11, loss: 3, delay: 50ms, jitter: 15ms}
+  - {name: dippy, percent: 11, dip: {kbps: 400, for: 15s, every: 1m}}
+  - {name: capped, percent: 11, kbps: 1000}

@@ -1,0 +1,21 @@
+# 10000 one-to-one rooms split over TWO generators, ramped by rooms: run this plan
+# on both at the same time, each with its own loadgen.name_prefix (g1-, g2-).
+# Each generator adds 1000 full rooms (2 participants, both publish audio +
+# simulcast video, each subscribes to the other) every 3 minutes up to 5000 rooms,
+# then holds 10 minutes. The report has one row per step, so it shows where it breaks.
+#
+# Per generator and step: +2000 producers, +4.1 Gbps upload, +1.2 Gbps download.
+# Total at the SFU per step: +8.3 Gbps in, +2.4 Gbps out; the last step (20000
+# participants) is ~41 Gbps in, over the SFU's 40G NIC.
+# Timeline: 15 s baseline + 4 x 3 min + 10 min hold + disconnect + 15 s ≈ 23 min.
+name: rooms-5000x2-split-ramp
+rooms: 5000
+maxParticipants: 2
+publishers: 2
+audio: true
+video: true
+addRooms: 1000    # step = 1000 more full rooms
+every: 3m
+hold: 10m
+# Layer each participant subscribes to (% of participants, must sum to 100).
+subscribe: {high: 20, medium: 50, low: 30}

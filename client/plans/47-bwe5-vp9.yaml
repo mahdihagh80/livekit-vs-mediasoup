@@ -1,0 +1,31 @@
+# Plan 45 with a 5 min hold and the codec pinned (46 = VP8, 47 = VP9).
+# BWE A/B check: does the SFU fit each viewer's downlink, how fast does it
+# VP9: L3T1 SVC, cumulative ~150/550/2050 kbps (needs vp9-*.ivf). The 1000 kbps
+# capped and 600 kbps dip still fit the middle layer, the dip only just.
+# adapt, and does it leave clean and lossy viewers alone? One camera publisher
+# per room (VP8 simulcast ~150/400/1500 kbps, plus audio) and every viewer asks
+# for the top layer, so only the SFU's congestion control picks the layer.
+# Sized so a lower layer always fits, unlike plan 40:
+#   dippy   a 600 kbps dip for 20 s every minute: medium fits, high does not.
+#   capped  a fixed 1000 kbps link: medium fits, high never does. "frames below
+#           requested layer" is ~100% here by design; judge freeze, loss, kbps.
+#   lossy   3% random loss with no rate limit: nothing should be lowered.
+# One dip profile only: the layer-switch histogram has no profile label.
+# Run on both generators side by side (isolated rooms), once per SFU config
+# (baseline, then tuned). Timeline: 15 s baseline + 30 s + 5 min hold ≈ 6 min.
+name: bwe5-vp9
+codec: vp9
+rooms: 20
+maxParticipants: 10
+publishers: 1
+audio: true
+video: true
+add: 10
+every: 30s
+hold: 5m
+subscribe: {high: 100, medium: 0, low: 0}
+network:
+  - {name: clean, percent: 30}
+  - {name: dippy, percent: 30, dip: {kbps: 600, for: 20s, every: 1m}}
+  - {name: capped, percent: 20, kbps: 1000}
+  - {name: lossy, percent: 20, delay: 50ms, jitter: 10ms, loss: 3}

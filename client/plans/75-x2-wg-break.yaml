@@ -1,0 +1,32 @@
+# Experiment 2: WG ramp to break. Four group rooms, each with 10
+# publishers (audio + VP9 SVC, two spatial layers L2T3_KEY: 180p 150 kbps + 360p 400 kbps, as
+# plans/74) and up to 990 viewers; every viewer receives 10 video + 10 audio tracks.
+# Ramp by people, not by rooms: every 2 minutes each room grows by 125 people, so the fleet
+# grows by 500 per step: 500 / 1,000 / ... / 4,000 (rooms end at 10 + 990). The 40 publishers
+# are all in from step 1 (step 1 = 10 publishers + 115 viewers per room).
+# Shared rooms on TWO generators (loadgen.shared_rooms prefix "x2wg-", shards 1/2 and 2/2):
+# gen-1 runs the publishers and half the viewers of each room, gen-2 the other half,
+# 20 s later. Top step = 39,600 received videos on the generators; earlier they carried
+# 15,000 (720p mix) at 54 % CPU, so the generators may be the limit before the SFU.
+# LiveKit and NIC layout as plans/74: 92 logical CPUs, 92 UDP mux ports, IRQs on CPUs 0-15.
+# Step timing as plans/73: clean window +35..+80 s, profiles from +82 s and +104 s.
+# Timeline: 15 s baseline + 7 x 2 min + 2 min hold + leave ≈ 17 min.
+name: x2-wg-break
+codec: vp9
+rooms: 4
+maxParticipants: 1000
+publishers: 10
+audio: true
+video: true
+add: 125
+every: 2m
+hold: 2m
+subscribe: {high: 20, medium: 50, low: 30}
+networkTarget: all
+network:
+  - {name: clean, percent: 40}
+  - {name: mobile, percent: 15, delay: 60ms, jitter: 20ms, loss: 1}
+  - {name: dippy, percent: 15, dip: {kbps: 300, for: 15s, every: 1m}}
+  - {name: capped, percent: 10, kbps: 1000}
+  - {name: burst, percent: 10, burst: {loss: 5, length: 50ms}}
+  - {name: far, percent: 10, delay: 150ms, jitter: 30ms}

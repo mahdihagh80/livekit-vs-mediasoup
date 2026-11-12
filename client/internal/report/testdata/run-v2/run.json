@@ -1,0 +1,30 @@
+{
+  "loadgen": {
+    "binary_sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+    "build_settings": {"-ldflags": "-X main.sourceHash=fedcba98", "CGO_ENABLED": "0", "GOAMD64": "v1", "GOARCH": "amd64"},
+    "cpus_allowed": "0-13",
+    "go_version": "go1.26.0",
+    "gomaxprocs": 14,
+    "host": "gen-test",
+    "nack_generator": "sfubench-nackgen/1",
+    "num_cpu": 14,
+    "source_sha256": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
+    "srtp_profiles": ["SRTP_AEAD_AES_128_GCM", "SRTP_AES128_CM_HMAC_SHA1_80"]
+  },
+  "name_prefix": "",
+  "plan": {"name":"bwe","rooms":2,"maxParticipants":4,"publishers":1,"audio":true,"video":true,"add":4,"every":"30s","hold":"1m0s","subscribe":{"high":100,"medium":0,"low":0},"churn":{"percent":0,"every":"0s"}},
+  "room_prefix": "",
+  "run": "livekit-bwe-new",
+  "schema": 2,
+  "sfu": "livekit",
+  "sfu_snapshot": {
+    "schema": 1, "taken": "2026-11-05T14:00:00+03:30", "host": "sfu-test", "run": "livekit-bwe-new", "sfu": "livekit",
+    "kernel": "6.8.0", "smt_active": "1", "governor": "performance",
+    "livekit": {"mode": "docker", "version": "1.13.11", "image": "livekit/livekit-server:v1.13.11", "image_id": "sha256:aaaabbbbccccdddd", "cpuset": "14-33", "affinity": null, "config_path": "/opt/test/livekit.yaml", "config_sha256": "eeeeffff00001111", "config": {"port": 7880}}
+  },
+  "sfu_snapshot_problems": [],
+  "shard": "1/1",
+  "shared_rooms": false,
+  "started": "2026-11-05T14:30:00.5+03:30",
+  "url": "ws://sfu.test:7880"
+}

@@ -1,0 +1,25 @@
+# Functional check of the options plans 40-42 leave out: a ramp by rooms
+# (addRooms) and events aimed at publishers and at everyone (target). Small
+# enough to run on both generators side by side (isolated rooms: name_prefix
+# g1- / g2-). Not a capacity test. 10 rooms of 6 per generator, 2 publishers
+# each; 5 full rooms join, a minute later the other 5.
+# During hold: the publishers lose the network for 5 s, half of them for 40 s
+# (long enough to drop the transport, so they rejoin while the SFU may still
+# hold the old session), then 30% of everyone rejoins at once and half of
+# everyone loses the network for 6 s (its own row: netloss_6s).
+# Timeline: 15 s baseline + 1 min + 4 min hold ≈ 5.5 min.
+name: features-targets
+rooms: 10
+maxParticipants: 6
+publishers: 2
+audio: true
+video: true
+addRooms: 5
+every: 1m
+hold: 4m
+subscribe: {high: 20, medium: 50, low: 30}
+events:
+  - {at: 20s, type: netloss, for: 5s, target: publishers}
+  - {at: 50s, type: netloss, for: 40s, target: publishers, percent: 50}
+  - {at: 2m15s, type: massRejoin, target: all, percent: 30}
+  - {at: 3m, type: netloss, for: 6s, target: all, percent: 50}

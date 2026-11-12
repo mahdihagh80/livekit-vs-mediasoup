@@ -1,0 +1,40 @@
+# LiveKit base config for the benchmark (a plain LiveKit config file), used by
+# the open-source livekit-server (livekit.version in bench.yaml).
+#
+# It's close to LiveKit's defaults. If you want the benchmark to reflect how you
+# would run LiveKit in production, copy those settings in here and keep the
+# changes marked [bench].
+#
+# livekit/start.sh writes one config per instance from this file, overwriting
+# these keys from bench.yaml (so don't bother setting them here):
+#   port, rtc.tcp_port, rtc.udp_port, rtc.node_ip, rtc.use_external_ip,
+#   keys, prometheus.port
+bind_addresses: ["0.0.0.0"]
+
+rtc:
+  # [bench] single-port UDP mux (rtc.udp_port is injected per instance), like
+  # mediasoup's WebRtcServer (one port per worker). If production uses
+  # port_range_start/end, use that instead and note it in the report.
+  #
+  # [bench] No public STUN in a flat lab: clients would otherwise contact Google
+  # STUN servers. An unreachable local address fails fast and harmlessly.
+  stun_servers: ["127.0.0.1:3478"]
+  packet_buffer_size_video: 500         # production default
+  packet_buffer_size_audio: 200
+  congestion_control:
+    enabled: true                       # BWE on, as in production (mediasoup also runs transport-cc BWE)
+    allow_pause: false
+    # Send-side BWE from the subscribers' TWCC, as in a typical production setup.
+    # Off = LiveKit expects REMB from subscribers; the loadgen sends none, so
+    # LiveKit would never lower a layer under the plans' network profiles.
+    use_send_side_bwe: true
+
+room:
+  auto_create: true
+  empty_timeout: 30
+  max_participants: 0
+
+logging:
+  level: warn                           # [bench] info-level logging at 20k participants costs CPU
+
+# turn: disabled in the lab (direct UDP for both SFUs)

@@ -1,0 +1,17 @@
+# fake bench.yaml for host/test-strip-secrets.sh; every value is made up
+hosts:
+  sfu_ip: 10.0.0.1
+livekit:
+  version: v1.13.11
+  api_key: fake-api-key-abcd
+  api_secret: fake-api-secret-efgh
+  url: ws://10.0.0.1:7880
+foo:
+  my_token: fake-tok-42
+loadgen:
+  report:
+    warmup: 30s
+    slo:
+      video_delay_p95: 100ms
+      loss_ratio: 0.01
+      join_success: 0.995

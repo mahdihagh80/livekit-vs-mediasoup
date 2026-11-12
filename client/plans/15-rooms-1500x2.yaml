@@ -1,0 +1,18 @@
+# 3000 one-to-one rooms split over TWO generators: run this plan on both at the
+# same time, each with its own loadgen.name_prefix (g1-, g2-). Each generator
+# makes 1500 rooms x 2 participants, both publish (audio + simulcast video).
+#
+# Per generator: 3000 producers, upload ≈ 6.2 Gbps, download ≈ 1.8 Gbps.
+# Total at the SFU: same load as 14-rooms-3000x2 (~12.5 Gbps in, ~3.5 Gbps out).
+# Timeline: 15 s baseline + join + 10 min hold + disconnect + 15 s ≈ 12 min.
+name: rooms-1500x2
+rooms: 1500
+maxParticipants: 2
+publishers: 2
+audio: true
+video: true
+add: 2            # one step: everyone joins at once
+every: 10m
+hold: 10m
+# Layer each participant subscribes to (% of participants, must sum to 100).
+subscribe: {high: 20, medium: 50, low: 30}

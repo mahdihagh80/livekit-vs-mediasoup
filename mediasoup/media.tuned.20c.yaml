@@ -1,0 +1,81 @@
+# A/B config for LiveKit vs mediasoup on the test host, paired with a LiveKit container on the same cores
+# (same physical cores). The .env sets MEDIA_CONFIG to this file, so start with:
+#   docker compose -f compose.yaml up -d
+# 20 mediasoup-workers, one per physical core 14-33 (14-31 NUMA0, 32-33 NUMA1; HT siblings
+# 78-97 idle). Node control on 8, signaling on 9-10, outside the 20.
+# scheduler capacity (not webinar): webinar dedicates a worker per room, and the BWE plans
+# have 40 rooms, so 20 workers refused half the joins. capacity puts ~2 rooms on a worker.
+# BWE: start high like LiveKit v1.13.11 (its estimate starts at 100 Mbps), with a 20 Mbps
+# max_outgoing_bitrate that no plan reaches.
+# control_cpus is the Node process; worker_cpus is one mediasoup-worker each.
+# cpu_budget must equal control_cpus + worker_cpus.
+worker_cpus: "14-33"
+rpc_listen: 127.0.0.1:3100
+# Public port (443-450 range is open) so a laptop Prometheus can scrape it.
+metrics_listen: 0.0.0.0:446
+listen_ip: 203.0.113.10
+announced_address: 203.0.113.10
+socket_buffer_bytes: 16777216
+# Room placement:
+#   webinar     publishers of a room on one worker (+ up to max_subs_per_worker
+#               subscribers); more subscribers on new workers fed by pipes.
+#               Each worker serves one room only.
+#   one_to_one  whole room on one random worker.
+#   capacity    load-unit admission control below.
+scheduler: capacity
+max_subs_per_worker: 300
+# capacity scheduler only from here to peer_reserve.
+router_max_peers: 200
+# Admission control: a worker takes at most worker_capacity load units.
+# Joins/produces/consumes that would go over are rejected.
+# One worker (one physical core) holds 400 units: ~13 full 10-peer rooms (~29 units each).
+worker_capacity: 400
+load_weights:
+  producer: 1
+  consumer: 1.5
+  pipe_consumer: 2
+  pipe_producer: 1
+# Units held per joining peer until its streams exist (3 = one A/V subscription).
+peer_reserve: 3
+rtc_base_port: 44444
+worker_log_level: warn
+enable_tcp: false
+# bps. Same start as LiveKit v1.13.11: its send-side BWE estimate starts at 100 Mbps
+# (pkg/sfu/bwe/sendsidebwe/congestion_detector.go, Reset) and its allocator gives every
+# track its requested layer until congestion is detected. The worker clamps this into
+# [min, max]_outgoing_bitrate, so the effective start is the 20 Mbps max below.
+# Was 300000 until 2026-11-05.
+initial_outgoing_bitrate: 100000000
+# bps, per recv transport. LiveKit has no such cap, so it must stay above the heaviest
+# plan: 5 VP9 streams at 2.05 Mbps plus audio, ~11 Mbps (34-group-6-vp9). Unset, the max
+# is the worker's 1 Gbps and the first probes aim at 3x and 6x the start: 300/600 Mbps.
+max_outgoing_bitrate: 20000000
+# Optional per-transport BWE settings (mediasoup 3.32 built-in BWE), all bps.
+# Leave a key out to keep mediasoup's default.
+# enable_bwe: true                 # false = no BWE on any transport (default true)
+# min_outgoing_bitrate: 30000      # floor for the send estimate (default: worker minimum, 30 kbps)
+# max_incoming_bitrate: 5000000    # cap per publisher transport, >= 30000, REMB only (default: no cap)
+# Per-viewer BWE telemetry (src/bwe.ts): 'bwe' trace + getStats() every 1 s on each
+# recv transport, exported as mediasoup_peer_* metrics labelled by peer. bwe_log also
+# appends it as JSON lines (wall-clock ms) to that path and implies bwe_telemetry.
+# Both default to off. /logs is ./logs next to compose.yaml.
+bwe_telemetry: true
+bwe_log: /logs/bwe-tuned-20c.jsonl
+media_codecs:
+  - kind: audio
+    mimeType: audio/opus
+    clockRate: 48000
+    channels: 2
+  - kind: video
+    mimeType: video/VP8
+    clockRate: 90000
+    parameters:
+      x-google-start-bitrate: 1000
+  - kind: video
+    mimeType: video/VP9
+    clockRate: 90000
+    parameters:
+      profile-id: 0
+events_url: http://127.0.0.1:18081/internal/events
+control_cpus: "8"
+cpu_budget: "8,14-33"

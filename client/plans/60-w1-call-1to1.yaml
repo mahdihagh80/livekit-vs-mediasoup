@@ -1,0 +1,35 @@
+# W1, 1:1 call: 1250 rooms x 2, both people publish audio + VP9 SVC (L3T1)
+# video and subscribe to each other. Split over TWO generators in isolated mode: run on
+# both at the same time, each with its own loadgen.name_prefix (g1-, g2-); each runs
+# 625 rooms, so the fleet is 2500 participants / 2500 producers.
+#
+# Per generator: 1250 producers (upload ≈ 1250 x 2.1 Mbps ≈ 2.6 Gbps), 1250 video
+# subscriptions at the 20/50/30 layer mix ≈ 0.73 Mbps each (download ≈ 0.9 Gbps + audio).
+# SFU total ≈ 5.3 Gbps in, 1.8 Gbps out. mediasoup: media.tuned.50p.yaml (capacity).
+# Calibration: 1250 publishers per generator is new; check gen CPU / send lag.
+# Timeline: 15 s baseline, one step (everyone queued at once, publishers
+# first in each room, paced by loadgen.max_inflight_joins), hold 9 min, leave.
+# Needs report.warmup: 120s in bench.yaml so the measured window is [2:00, 9:00] = 7 min
+# (7 dips for dippy). Run 3x per SFU alternating LK, MS, LK, MS, LK, MS.
+name: w1-call-1to1
+codec: vp9
+rooms: 625
+maxParticipants: 2
+publishers: 2
+audio: true
+video: true
+add: 2            # one step: everyone joins
+every: 9m
+hold: 9m
+subscribe: {high: 20, medium: 50, low: 30}
+# Network mix. networkTarget all: everyone's SUBSCRIBE
+# connection (SFU -> person) gets a profile by position, publishers included; publish
+# connections stay clean both ways. Same people impaired on both SFUs.
+networkTarget: all
+network:
+  - {name: clean, percent: 40}
+  - {name: mobile, percent: 15, delay: 60ms, jitter: 20ms, loss: 1}
+  - {name: dippy, percent: 15, dip: {kbps: 300, for: 15s, every: 1m}}
+  - {name: capped, percent: 10, kbps: 1000}
+  - {name: burst, percent: 10, burst: {loss: 5, length: 50ms}}
+  - {name: far, percent: 10, delay: 150ms, jitter: 30ms}

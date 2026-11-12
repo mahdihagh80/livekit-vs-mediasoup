@@ -1,0 +1,32 @@
+# Generator calibration for W1: plan 60 ramped by rooms. Same rooms, layer
+# mix and network mix; the rooms join in 5 steps instead of all at once, so the report has
+# one row per load level and shows where (if anywhere) a generator crosses CPU 70 %,
+# kernel drop 0.5 % or send lag p99 20 ms. Isolated mode on TWO generators, as plan 60:
+# run on both at the same time, each with its own loadgen.name_prefix (g1-, g2-).
+#
+# Per generator: every 4 min the next 125 rooms join in full (both people publish), so
+# 250 / 500 / 750 / 1000 / 1250 publishers per generator (fleet 500 ... 2500). The last
+# step holds 9 min, like plan 60, so step 5 is plan 60's load measured the same way.
+# Each step is measured over [settled + report.warmup 120 s, end]: 2 min per ramp step,
+# 7 min in the hold.
+# Timeline: 15 s baseline + 4 x 4 min + 9 min hold + leave ≈ 26 min.
+name: w1-call-1to1-ramp
+codec: vp9
+rooms: 625
+maxParticipants: 2
+publishers: 2
+audio: true
+video: true
+addRooms: 125     # step = 125 more full rooms per generator (250 people, all publishing)
+every: 4m
+hold: 9m
+subscribe: {high: 20, medium: 50, low: 30}
+# Network mix: as plan 60.
+networkTarget: all
+network:
+  - {name: clean, percent: 40}
+  - {name: mobile, percent: 15, delay: 60ms, jitter: 20ms, loss: 1}
+  - {name: dippy, percent: 15, dip: {kbps: 300, for: 15s, every: 1m}}
+  - {name: capped, percent: 10, kbps: 1000}
+  - {name: burst, percent: 10, burst: {loss: 5, length: 50ms}}
+  - {name: far, percent: 10, delay: 150ms, jitter: 30ms}

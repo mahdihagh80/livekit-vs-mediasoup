@@ -1,0 +1,10 @@
+# 10 rooms of 6 on one 4-core machine. Each room fills in one add.
+name: local-4core-group-6
+rooms: 10
+maxParticipants: 6
+publishers: 6
+audio: true
+video: true
+add: 6
+every: 1m
+hold: 1m

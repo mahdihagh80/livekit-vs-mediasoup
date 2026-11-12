@@ -1,0 +1,20 @@
+# Two webinar rooms, one per generator: run this plan on both at the same time,
+# each with its own loadgen.name_prefix (g1-, g2-), so each generator makes its
+# own room with 1 publisher (audio + simulcast video) and 3000 subscribers.
+# Same per-room shape as 13-webinar-1x3000 (which ran on one generator).
+#
+# Per generator: upload ≈ 2.1 Mbps, download ≈ 3000 x ~0.55 Mbps ≈ 1.7 Gbps
+# (13-webinar-1x3000 dropped 0.45% rx on gen-1, just under the 0.5% limit).
+# Total at the SFU: 2 publishers in, ~6000 video + ~6000 audio tracks out, ≈ 2.9 Gbps.
+# Timeline: 15 s baseline + join + 10 min hold + disconnect + 15 s ≈ 12 min.
+name: webinar-1x3000-split
+rooms: 1
+maxParticipants: 3001
+publishers: 1
+audio: true
+video: true
+add: 3001         # one step: everyone joins at once
+every: 10m
+hold: 10m
+# Layer each participant subscribes to (% of participants, must sum to 100).
+subscribe: {high: 20, medium: 50, low: 30}

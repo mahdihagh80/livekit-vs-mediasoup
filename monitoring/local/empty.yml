@@ -1,0 +1,2 @@
+# No scrape targets: this Prometheus only serves the downloaded TSDB.
+global: {}

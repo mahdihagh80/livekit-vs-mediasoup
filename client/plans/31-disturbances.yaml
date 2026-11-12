@@ -1,0 +1,21 @@
+# 100 rooms of 10 (2 publishers). During hold: half the viewers lose all
+# traffic for 5 s, then 30% of them leave and rejoin at once, then the
+# publishers reconnect. Drops rejoin automatically (rejoin defaults on with events).
+# Look at: bench_recovery_seconds{event=...}, bench_recovery_missed_total,
+# bench_rejoins_total{reason=...}, bench_participants{state=reconnecting}.
+# Timeline: 15 s baseline + 1 min + 6 min hold ≈ 7.5 min.
+name: disturbances
+rooms: 100
+maxParticipants: 10
+publishers: 2
+audio: true
+video: true
+add: 5
+every: 1m
+hold: 6m
+subscribe: {high: 20, medium: 50, low: 30}
+events:
+  - {at: 1m, type: netloss, for: 5s, percent: 50}
+  - {at: 2m, type: netloss, for: 40s, percent: 10}     # long enough to drop the transport
+  - {at: 3m30s, type: massRejoin, percent: 30}
+  - {at: 5m, type: publisherReconnect}

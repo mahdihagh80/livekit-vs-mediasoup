@@ -1,0 +1,30 @@
+# LAPTOP ONLY: Prometheus over a downloaded TSDB + Grafana with the sfu-bench
+# dashboard. Started by monitoring/view-local.sh; both ports bind to 127.0.0.1.
+name: sfu-bench-view
+
+services:
+  prometheus:
+    image: docker.io/prom/prometheus:v3.5.0
+    user: "0"
+    command:
+      - --config.file=/etc/prometheus/empty.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=100y
+      - --web.listen-address=0.0.0.0:9090
+    ports: ["127.0.0.1:9091:9090"]
+    volumes:
+      - ./empty.yml:/etc/prometheus/empty.yml:ro
+      - ./data:/prometheus
+
+  grafana:
+    image: docker.io/grafana/grafana:11.6.0
+    depends_on: [prometheus]
+    ports: ["127.0.0.1:3001:3000"]
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+    volumes:
+      - ./provisioning:/etc/grafana/provisioning:ro
+      - ../grafana/sfu-bench.json:/var/lib/grafana/dashboards/sfu-bench.json:ro
+      - ../grafana/mediasoup.json:/var/lib/grafana/dashboards/mediasoup.json:ro

@@ -1,0 +1,2656 @@
+{
+ "title": "LiveKit",
+ "uid": "livekit",
+ "editable": true,
+ "schemaVersion": 39,
+ "time": {
+  "from": "now-1h",
+  "to": "now"
+ },
+ "refresh": "10s",
+ "tags": [
+  "sfu-bench",
+  "livekit"
+ ],
+ "links": [
+  {
+   "title": "Go runtime (full)",
+   "type": "link",
+   "url": "/d/go-overview?var-job=livekit",
+   "keepTime": true
+  }
+ ],
+ "templating": {
+  "list": [
+   {
+    "name": "ds",
+    "type": "datasource",
+    "query": "prometheus",
+    "label": "Prometheus (bench)"
+   }
+  ]
+ },
+ "panels": [
+  {
+   "type": "row",
+   "title": "Overview",
+   "id": 1,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 0
+   }
+  },
+  {
+   "type": "stat",
+   "title": "Rooms",
+   "id": 2,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 4,
+    "w": 3,
+    "x": 0,
+    "y": 1
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "blue",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ]
+    },
+    "colorMode": "value",
+    "graphMode": "area"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(livekit_room_total{job=\"livekit\"})",
+     "legendFormat": "",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "stat",
+   "title": "Participants",
+   "id": 3,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 4,
+    "w": 3,
+    "x": 3,
+    "y": 1
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "blue",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ]
+    },
+    "colorMode": "value",
+    "graphMode": "area"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(livekit_participant_total{job=\"livekit\"})",
+     "legendFormat": "",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "stat",
+   "title": "Tracks published",
+   "id": 4,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 4,
+    "w": 3,
+    "x": 6,
+    "y": 1
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "blue",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ]
+    },
+    "colorMode": "value",
+    "graphMode": "area"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(livekit_track_published_total{job=\"livekit\"})",
+     "legendFormat": "",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "stat",
+   "title": "Tracks subscribed",
+   "id": 5,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 4,
+    "w": 3,
+    "x": 9,
+    "y": 1
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "blue",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ]
+    },
+    "colorMode": "value",
+    "graphMode": "area"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(livekit_track_subscribed_total{job=\"livekit\"})",
+     "legendFormat": "",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "stat",
+   "title": "Egress",
+   "id": 6,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 4,
+    "w": 3,
+    "x": 12,
+    "y": 1
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bps",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "blue",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ]
+    },
+    "colorMode": "value",
+    "graphMode": "area"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "8 * sum(rate(livekit_packet_bytes{job=\"livekit\",direction=\"outgoing\"}[$__rate_interval]))",
+     "legendFormat": "",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "stat",
+   "title": "LiveKit CPU (cores)",
+   "id": 7,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "LiveKit runs on 50 cores (cpuset 14-63, GOMAXPROCS 50)",
+   "gridPos": {
+    "h": 4,
+    "w": 3,
+    "x": 15,
+    "y": 1
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "yellow",
+        "value": 35
+       },
+       {
+        "color": "red",
+        "value": 45
+       }
+      ]
+     },
+     "decimals": 1
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ]
+    },
+    "colorMode": "value",
+    "graphMode": "area"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "rate(process_cpu_seconds_total{job=\"livekit\"}[$__rate_interval])",
+     "legendFormat": "",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "stat",
+   "title": "Join p95",
+   "id": 8,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 4,
+    "w": 3,
+    "x": 18,
+    "y": 1
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ms",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "yellow",
+        "value": 1000
+       },
+       {
+        "color": "red",
+        "value": 3000
+       }
+      ]
+     },
+     "decimals": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ]
+    },
+    "colorMode": "value",
+    "graphMode": "area"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.95, sum by (le) (rate(livekit_session_join_latency_ms_bucket{job=\"livekit\"}[$__rate_interval])))",
+     "legendFormat": "",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "stat",
+   "title": "Quality score avg",
+   "id": 9,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "LiveKit's MOS-like score (1..5) per participant track",
+   "gridPos": {
+    "h": 4,
+    "w": 3,
+    "x": 21,
+    "y": 1
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "red",
+        "value": null
+       },
+       {
+        "color": "yellow",
+        "value": 3.5
+       },
+       {
+        "color": "green",
+        "value": 4.2
+       }
+      ]
+     },
+     "decimals": 2
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ]
+    },
+    "colorMode": "value",
+    "graphMode": "area"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(rate(livekit_quality_score_sum{job=\"livekit\"}[$__rate_interval])) / sum(rate(livekit_quality_score_count{job=\"livekit\"}[$__rate_interval]))",
+     "legendFormat": "",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "row",
+   "title": "Sessions and joins",
+   "id": 10,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 5
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Rooms / participants",
+   "id": 11,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 6
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(livekit_room_total{job=\"livekit\"})",
+     "legendFormat": "rooms",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "sum(livekit_participant_total{job=\"livekit\"})",
+     "legendFormat": "participants",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Tracks",
+   "id": 12,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 6
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (kind) (livekit_track_published_total{job=\"livekit\"})",
+     "legendFormat": "published {{kind}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "sum by (kind) (livekit_track_subscribed_total{job=\"livekit\"})",
+     "legendFormat": "subscribed {{kind}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Join funnel (per second, by state)",
+   "id": 13,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "signal_connected \u2192 rtc_init \u2192 rtc_connected \u2192 rtc_success \u2192 rtc_active. A gap between states = joins stuck at that stage",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 6
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ops",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (state) (rate(livekit_participant_join_total{job=\"livekit\"}[$__rate_interval]))",
+     "legendFormat": "{{state}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Session join latency",
+   "id": 14,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "Signal connect \u2192 join response",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 14
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ms",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.5, sum by (le) (rate(livekit_session_join_latency_ms_bucket{job=\"livekit\"}[$__rate_interval])))",
+     "legendFormat": "p50",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "histogram_quantile(0.95, sum by (le) (rate(livekit_session_join_latency_ms_bucket{job=\"livekit\"}[$__rate_interval])))",
+     "legendFormat": "p95",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "C",
+     "expr": "histogram_quantile(0.99, sum by (le) (rate(livekit_session_join_latency_ms_bucket{job=\"livekit\"}[$__rate_interval])))",
+     "legendFormat": "p99",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Session start time",
+   "id": 15,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "Join \u2192 media connected (ICE + DTLS)",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 14
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ms",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.5, sum by (le) (rate(livekit_session_start_time_ms_bucket{job=\"livekit\"}[$__rate_interval])))",
+     "legendFormat": "p50",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "histogram_quantile(0.95, sum by (le) (rate(livekit_session_start_time_ms_bucket{job=\"livekit\"}[$__rate_interval])))",
+     "legendFormat": "p95",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "C",
+     "expr": "histogram_quantile(0.99, sum by (le) (rate(livekit_session_start_time_ms_bucket{job=\"livekit\"}[$__rate_interval])))",
+     "legendFormat": "p99",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "PeerConnection states",
+   "id": 16,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 14
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (transport, state) (livekit_peer_connection_state{job=\"livekit\"})",
+     "legendFormat": "{{transport}} {{state}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Track publish / subscribe attempts and failures",
+   "id": 17,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 22
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ops",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (state) (rate(livekit_track_publish_counter{job=\"livekit\"}[$__rate_interval]))",
+     "legendFormat": "publish {{state}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "sum by (state, error) (rate(livekit_track_subscribe_counter{job=\"livekit\"}[$__rate_interval]))",
+     "legendFormat": "subscribe {{state}} {{error}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Publish / subscribe time (pubsub)",
+   "id": 18,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "Track published/subscribed \u2192 first media",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 22
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ms",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.95, sum by (le, direction, type) (rate(livekit_pubsubtime_ms_bucket{job=\"livekit\"}[$__rate_interval])))",
+     "legendFormat": "p95 {{direction}} {{type}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Signal / service operations",
+   "id": 19,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 22
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ops",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (type, status) (rate(livekit_node_messages{job=\"livekit\"}[$__rate_interval]))",
+     "legendFormat": "msg {{type}} {{status}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "sum by (type, status, error_type) (rate(livekit_node_service_operation{job=\"livekit\"}[$__rate_interval]))",
+     "legendFormat": "op {{type}} {{status}} {{error_type}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "row",
+   "title": "Media quality",
+   "id": 20,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 30
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Packet loss % p95 (by direction, kind)",
+   "id": 21,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "incoming = publisher \u2192 SFU, outgoing = SFU \u2192 subscriber (from receiver reports)",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 31
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.95, sum by (le, direction, type) (rate(livekit_packet_loss_percent_bucket{job=\"livekit\"}[$__rate_interval])))",
+     "legendFormat": "{{direction}} {{type}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Packets lost per second",
+   "id": 22,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 31
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "pps",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (direction, type) (rate(livekit_packet_loss_total{job=\"livekit\"}[$__rate_interval]))",
+     "legendFormat": "{{direction}} {{type}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Jitter p95 (by direction, kind)",
+   "id": 23,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 31
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ms",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.95, sum by (le, direction, type) (rate(livekit_jitter_us_bucket{job=\"livekit\"}[$__rate_interval]))) / 1000",
+     "legendFormat": "{{direction}} {{type}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "RTT",
+   "id": 24,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 39
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ms",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.5, sum by (le) (rate(livekit_rtt_ms_bucket{job=\"livekit\"}[$__rate_interval])))",
+     "legendFormat": "p50",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "histogram_quantile(0.95, sum by (le) (rate(livekit_rtt_ms_bucket{job=\"livekit\"}[$__rate_interval])))",
+     "legendFormat": "p95",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "C",
+     "expr": "histogram_quantile(0.99, sum by (le) (rate(livekit_rtt_ms_bucket{job=\"livekit\"}[$__rate_interval])))",
+     "legendFormat": "p99",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Out-of-order % p95",
+   "id": 25,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 39
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.95, sum by (le, direction, type) (rate(livekit_packet_out_of_order_percent_bucket{job=\"livekit\"}[$__rate_interval])))",
+     "legendFormat": "{{direction}} {{type}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "NACK / PLI / keyframes per second",
+   "id": 26,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "PLI storms with many subscribers force the publisher to send keyframes often",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 39
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ops",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (direction) (rate(livekit_nack_total{job=\"livekit\"}[$__rate_interval]))",
+     "legendFormat": "nack {{direction}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "sum by (direction) (rate(livekit_pli_total{job=\"livekit\"}[$__rate_interval]))",
+     "legendFormat": "pli {{direction}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "C",
+     "expr": "sum by (direction) (rate(livekit_keyframe_total{job=\"livekit\"}[$__rate_interval]))",
+     "legendFormat": "keyframe {{direction}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Quality score",
+   "id": 27,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 47
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     },
+     "max": 5,
+     "min": 1
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.05, sum by (le) (rate(livekit_quality_score_bucket{job=\"livekit\"}[$__rate_interval])))",
+     "legendFormat": "p5",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "histogram_quantile(0.5, sum by (le) (rate(livekit_quality_score_bucket{job=\"livekit\"}[$__rate_interval])))",
+     "legendFormat": "p50",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "C",
+     "expr": "sum(rate(livekit_quality_score_sum{job=\"livekit\"}[$__rate_interval])) / sum(rate(livekit_quality_score_count{job=\"livekit\"}[$__rate_interval]))",
+     "legendFormat": "avg",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Quality rating distribution",
+   "id": 28,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "Cumulative: rating \u2264 le per second (POOR < GOOD < EXCELLENT)",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 47
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ops",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (le) (rate(livekit_quality_rating_bucket{job=\"livekit\"}[$__rate_interval]))",
+     "legendFormat": "\u2264 {{le}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Forward latency",
+   "id": 29,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "SFU receive \u2192 forward. Stays 0 when sampling is off",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 47
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ms",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "max(livekit_forward_latency{job=\"livekit\"}) / 1e6",
+     "legendFormat": "gauge",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "histogram_quantile(0.95, sum by (le) (rate(livekit_forward_latency_ns_bucket{job=\"livekit\"}[$__rate_interval]))) / 1e6",
+     "legendFormat": "p95",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "row",
+   "title": "Traffic",
+   "id": 30,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 55
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Bitrate by direction",
+   "id": 31,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 12,
+    "x": 0,
+    "y": 56
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bps",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "8 * sum by (direction, transmission) (rate(livekit_packet_bytes{job=\"livekit\"}[$__rate_interval]))",
+     "legendFormat": "{{direction}} {{transmission}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Packet rate by direction",
+   "id": 32,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 12,
+    "x": 12,
+    "y": 56
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "pps",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (direction, transmission) (rate(livekit_packet_total{job=\"livekit\"}[$__rate_interval]))",
+     "legendFormat": "{{direction}} {{transmission}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Retransmit share of egress",
+   "id": 33,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 64
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "100 * sum(rate(livekit_packet_bytes{job=\"livekit\",direction=\"outgoing\",transmission=\"retransmit\"}[$__rate_interval])) / sum(rate(livekit_packet_bytes{job=\"livekit\",direction=\"outgoing\"}[$__rate_interval]))",
+     "legendFormat": "% bytes retransmitted",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Node packets (out / dropped)",
+   "id": 34,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "dropped > 0 = LiveKit's forwarder dropped packets internally (queue full)",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 64
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "pps",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (type) (rate(livekit_node_packet_total{job=\"livekit\"}[$__rate_interval]))",
+     "legendFormat": "{{type}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Egress per subscribed track",
+   "id": 35,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 64
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bps",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "8 * sum(rate(livekit_packet_bytes{job=\"livekit\",direction=\"outgoing\"}[$__rate_interval])) / sum(livekit_track_subscribed_total{job=\"livekit\"})",
+     "legendFormat": "bps per subscribed track",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "psrpc signal relay",
+   "id": 36,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "Signal path between the RTC and signal services inside the process",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 72
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (method, direction) (rate(livekit_psrpc_bytes_total{job=\"livekit\"}[$__rate_interval])) * 8",
+     "legendFormat": "{{method}} {{direction}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "histogram_quantile(0.95, sum by (le) (rate(livekit_psrpc_stream_send_time_ms_bucket{job=\"livekit\"}[$__rate_interval])))",
+     "legendFormat": "p95 send time (ms)",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "row",
+   "title": "Host (SFU node_exporter) and Go runtime",
+   "id": 37,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 80
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "CPU: LiveKit cores 14-63",
+   "id": 38,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 81
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     },
+     "max": 100,
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "100 * avg(1 - rate(node_cpu_seconds_total{job=\"node\",mode=\"idle\",cpu=~\"1[4-9]|[2-5][0-9]|6[0-3]\"}[$__rate_interval]))",
+     "legendFormat": "avg",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "100 * max(1 - rate(node_cpu_seconds_total{job=\"node\",mode=\"idle\",cpu=~\"1[4-9]|[2-5][0-9]|6[0-3]\"}[$__rate_interval]))",
+     "legendFormat": "max",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "C",
+     "expr": "100 * min(1 - rate(node_cpu_seconds_total{job=\"node\",mode=\"idle\",cpu=~\"1[4-9]|[2-5][0-9]|6[0-3]\"}[$__rate_interval]))",
+     "legendFormat": "min",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "CPU: IRQ cores 0-7",
+   "id": 39,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 81
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     },
+     "max": 100,
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "100 * avg(1 - rate(node_cpu_seconds_total{job=\"node\",mode=\"idle\",cpu=~\"[0-7]\"}[$__rate_interval]))",
+     "legendFormat": "avg busy",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "100 * max(1 - rate(node_cpu_seconds_total{job=\"node\",mode=\"idle\",cpu=~\"[0-7]\"}[$__rate_interval]))",
+     "legendFormat": "max busy",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "C",
+     "expr": "100 * max(rate(node_cpu_seconds_total{job=\"node\",mode=\"softirq\",cpu=~\"[0-7]\"}[$__rate_interval]))",
+     "legendFormat": "max softirq",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "CPU by mode, LiveKit cores",
+   "id": 40,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "Share of the 50 LiveKit cores. High softirq here = packets steered onto LiveKit cores",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 81
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 10,
+      "stacking": {
+       "mode": "normal"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "100 * sum by (mode) (rate(node_cpu_seconds_total{job=\"node\",mode!=\"idle\",cpu=~\"1[4-9]|[2-5][0-9]|6[0-3]\"}[$__rate_interval])) / 50",
+     "legendFormat": "{{mode}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "bond1 bitrate",
+   "id": 41,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 89
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bps",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "8 * rate(node_network_receive_bytes_total{job=\"node\",device=\"bond1\"}[$__rate_interval])",
+     "legendFormat": "rx",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "8 * rate(node_network_transmit_bytes_total{job=\"node\",device=\"bond1\"}[$__rate_interval])",
+     "legendFormat": "tx",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "NIC drops / errors",
+   "id": 42,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 89
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "pps",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (device) (rate(node_network_receive_drop_total{job=\"node\",device=~\"bond1|ens2f.*\"}[$__rate_interval]))",
+     "legendFormat": "rx drop {{device}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "sum by (device) (rate(node_network_transmit_drop_total{job=\"node\",device=~\"bond1|ens2f.*\"}[$__rate_interval]))",
+     "legendFormat": "tx drop {{device}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "C",
+     "expr": "sum by (device) (rate(node_network_receive_errs_total{job=\"node\",device=~\"bond1|ens2f.*\"}[$__rate_interval]))",
+     "legendFormat": "rx err {{device}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "UDP socket errors",
+   "id": 43,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "With the 50-port UDP mux every PeerConnection shares 50 sockets: rcvbuf errors = socket buffers overflowing",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 89
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "pps",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "rate(node_netstat_Udp_RcvbufErrors{job=\"node\"}[$__rate_interval])",
+     "legendFormat": "rcvbuf errors",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "rate(node_netstat_Udp_SndbufErrors{job=\"node\"}[$__rate_interval])",
+     "legendFormat": "sndbuf errors",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "C",
+     "expr": "rate(node_netstat_Udp_InErrors{job=\"node\"}[$__rate_interval])",
+     "legendFormat": "in errors",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "LiveKit process CPU (cores)",
+   "id": 44,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 97
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     },
+     "max": 50,
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "rate(process_cpu_seconds_total{job=\"livekit\"}[$__rate_interval])",
+     "legendFormat": "cores",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "LiveKit memory",
+   "id": 45,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 97
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bytes",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "process_resident_memory_bytes{job=\"livekit\"}",
+     "legendFormat": "rss",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "go_memstats_heap_inuse_bytes{job=\"livekit\"}",
+     "legendFormat": "heap in use",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "C",
+     "expr": "go_memstats_next_gc_bytes{job=\"livekit\"}",
+     "legendFormat": "next GC target",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "D",
+     "expr": "go_gc_gomemlimit_bytes{job=\"livekit\"}",
+     "legendFormat": "GOMEMLIMIT",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Goroutines / threads",
+   "id": 46,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 97
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "go_goroutines{job=\"livekit\"}",
+     "legendFormat": "goroutines",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "go_threads{job=\"livekit\"}",
+     "legendFormat": "threads",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "GC pause",
+   "id": 47,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 105
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "rate(go_gc_duration_seconds_sum{job=\"livekit\"}[$__rate_interval])",
+     "legendFormat": "GC time per second",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "go_gc_duration_seconds{job=\"livekit\",quantile=\"1\"}",
+     "legendFormat": "max pause",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Allocation rate",
+   "id": 48,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 105
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "Bps",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "rate(go_memstats_alloc_bytes_total{job=\"livekit\"}[$__rate_interval])",
+     "legendFormat": "alloc/s",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  },
+  {
+   "type": "timeseries",
+   "title": "Open file descriptors",
+   "id": 49,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds}"
+   },
+   "description": "",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 105
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 0,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "process_open_fds{job=\"livekit\"}",
+     "legendFormat": "open",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "process_max_fds{job=\"livekit\"}",
+     "legendFormat": "max",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds}"
+     }
+    }
+   ]
+  }
+ ]
+}

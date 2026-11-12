@@ -1,0 +1,12 @@
+# 3000 calls join at once, then the run holds.
+name: join-storm
+rooms: 3000
+maxParticipants: 2
+publishers: 2
+audio: true
+video: true
+add: 2
+every: 1m
+hold: 3m
+# Layer each participant subscribes to (% of participants, must sum to 100).
+subscribe: {high: 20, medium: 50, low: 30}

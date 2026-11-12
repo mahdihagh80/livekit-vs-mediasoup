@@ -1,0 +1,29 @@
+# Experiment 3: WG ramp in 1-minute steps of 250 per room. Four group rooms, each with 10
+# publishers (audio + VP9 SVC, two spatial layers L2T3_KEY: 180p 150 kbps + 360p 400 kbps, as
+# plans/75); every viewer receives 10 video + 10 audio tracks.
+# Every minute each room grows by 250 people: 250 / 500 / 750 / 1,000 per room,
+# fleet 1,000 / 2,000 / 3,000 / 4,000. The 40 publishers are all in from step 1
+# (step 1 = 10 publishers + 240 viewers per room).
+# Shared rooms on TWO generators (loadgen.shared_rooms prefix "x3wg-", shards 1/2 and 2/2), as plans/75.
+# LiveKit and NIC layout as plans/75: 92 logical CPUs, 92 UDP mux ports, IRQs on CPUs 0-15.
+# Step timing (60 s steps): clean window +20..+38 s, light profiles from +40 s (CPU 8 s), heavy from +50 s.
+# Timeline: 15 s baseline + 3 x 1 min + 2 min hold + leave ≈ 6 min.
+name: x3-wg-250
+codec: vp9
+rooms: 4
+maxParticipants: 1000
+publishers: 10
+audio: true
+video: true
+add: 250
+every: 1m
+hold: 2m
+subscribe: {high: 20, medium: 50, low: 30}
+networkTarget: all
+network:
+  - {name: clean, percent: 40}
+  - {name: mobile, percent: 15, delay: 60ms, jitter: 20ms, loss: 1}
+  - {name: dippy, percent: 15, dip: {kbps: 300, for: 15s, every: 1m}}
+  - {name: capped, percent: 10, kbps: 1000}
+  - {name: burst, percent: 10, burst: {loss: 5, length: 50ms}}
+  - {name: far, percent: 10, delay: 150ms, jitter: 30ms}

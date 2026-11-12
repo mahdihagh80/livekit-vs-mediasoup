@@ -1,0 +1,19 @@
+# 3000 one-to-one rooms: 2 participants per room, both publish (audio + simulcast
+# video), all joined in one step and held for 10 minutes.
+#
+# Timeline: 15 s baseline + join (6000 at max_inflight_joins) + 10 min hold
+#           + disconnect + 15 s before the report  ≈ 12 min.
+# Load: 6000 producers; every participant receives the other one -> ~6000 video + ~6000 audio tracks.
+#       generator upload ≈ 6000 x (~2.05 Mbps simulcast 150+400+1500 + audio) ≈ 12.5 Gbps,
+#       download ≈ 6000 x (~0.55 Mbps video at the 20/50/30 mix + audio) ≈ 3.5 Gbps.
+name: rooms-3000x2
+rooms: 3000
+maxParticipants: 2
+publishers: 2
+audio: true
+video: true
+add: 2            # one step: everyone joins at once
+every: 10m
+hold: 10m
+# Layer each participant subscribes to (% of participants, must sum to 100).
+subscribe: {high: 20, medium: 50, low: 30}

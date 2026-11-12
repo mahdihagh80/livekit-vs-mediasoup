@@ -1,0 +1,49 @@
+# Mediasoup on the SFU host. The image is already loaded; this file does not build.
+# Config files sit next to this file.
+#
+#   docker compose -f compose.yaml up -d
+#   MEDIA_CONFIG=media.tuned.yaml docker compose -f compose.yaml up -d        (BWE-tuned, mediasoup 3.32+ image)
+#   MEDIA_CONFIG=media.tuned-3.31.yaml docker compose -f compose.yaml up -d   (BWE-tuned, mediasoup 3.31 image only)
+#   docker compose -f compose.yaml down
+
+name: sfu-bench-sfu
+
+x-common: &common
+  network_mode: host
+  restart: "no"
+  init: true
+  ulimits:
+    nofile: {soft: 1048576, hard: 1048576}
+  logging:
+    driver: json-file
+    options: {max-size: "100m", max-file: "3"}
+
+services:
+  mediasoup-media:
+    <<: *common
+    image: sfu-bench/mediasoup:local
+    command: ["run-media.sh", "/config/media.yaml"]
+    volumes:
+      - ./${MEDIA_CONFIG:-media.yaml}:/config/media.yaml:ro
+      - ./logs:/logs   # bwe_log JSONL (media.yaml)
+    stop_grace_period: 20s
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "media"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+
+  mediasoup-signaling:
+    <<: *common
+    image: sfu-bench/mediasoup:local
+    command: ["run-signaling.sh", "/config/signaling.yaml"]
+    volumes:
+      - ./signaling.yaml:/config/signaling.yaml:ro
+    depends_on:
+      mediasoup-media: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "signaling"]
+      interval: 5s
+      timeout: 3s
+      retries: 6

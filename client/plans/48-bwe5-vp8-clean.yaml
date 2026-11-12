@@ -1,0 +1,12 @@
+# Plan 46 without network shaping: clean single-publisher leg of the C7 sensitivity pair.
+name: bwe5-vp8-clean
+codec: vp8
+rooms: 20
+maxParticipants: 10
+publishers: 1
+audio: true
+video: true
+add: 10
+every: 30s
+hold: 5m
+subscribe: {high: 100, medium: 0, low: 0}

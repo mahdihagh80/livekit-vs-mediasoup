@@ -1,0 +1,34 @@
+# Experiment 1: W1 ramp to break. 1:1 calls, both people publish
+# audio + VP9 SVC (L3T3_KEY) and subscribe to each other. Every 2 minutes 1,500 more people
+# join; the run goes on past the point where something breaks, and the break point is read
+# from the 5 s timeline afterwards.
+# Isolated mode on TWO generators: run on both at the same time, each with its own
+# loadgen.name_prefix (g1-, g2-), shared_rooms OFF.
+#
+# Per generator every 2 min 375 more full rooms join (750 people), 8 steps:
+# fleet = 1,500 / 3,000 / 4,500 / 6,000 / 7,500 / 9,000 / 10,500 / 12,000 people.
+# LiveKit: 100 logical CPUs (14-63,78-127), tuned baseline config. NIC: 2 queues per bond
+# slave, 8 queue IRQs on CPUs 0-7 (host/33-nic-2q.sh).
+# Step timing: joins take about 10-15 s; +35..+80 s is the
+# clean window used to judge the step; profiles run from +82 s (CPU 15 s, goroutines,
+# heap, allocs) and +104 s (mutex + block 5 s, trace 1 s).
+# Timeline: 15 s baseline + 7 x 2 min + 2 min hold + leave ≈ 17 min.
+name: x1-w1-break
+codec: vp9
+rooms: 3000
+maxParticipants: 2
+publishers: 2
+audio: true
+video: true
+addRooms: 375
+every: 2m
+hold: 2m
+subscribe: {high: 20, medium: 50, low: 30}
+networkTarget: all
+network:
+  - {name: clean, percent: 40}
+  - {name: mobile, percent: 15, delay: 60ms, jitter: 20ms, loss: 1}
+  - {name: dippy, percent: 15, dip: {kbps: 300, for: 15s, every: 1m}}
+  - {name: capped, percent: 10, kbps: 1000}
+  - {name: burst, percent: 10, burst: {loss: 5, length: 50ms}}
+  - {name: far, percent: 10, delay: 150ms, jitter: 30ms}

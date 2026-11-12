@@ -1,0 +1,16 @@
+# Probe: why LiveKit's scheduler and GC degrade at high goroutine counts.
+# ONE room of 5001: 1 video publisher (audio + VP9 SVC L3T1) and 5000 viewers, 5 minutes,
+# clean network (no `network:` block), profiled with pprof.
+# Shared rooms on TWO generators (shard 1: the publisher + 2500 viewers; shard 2: 2500 viewers).
+# Not part of the s14 series and not on its dashboard.
+name: probe-1pub-5k
+codec: vp9
+rooms: 1
+maxParticipants: 5001
+publishers: 1
+audio: true
+video: true
+add: 5001
+every: 5m
+hold: 5m
+subscribe: {high: 20, medium: 50, low: 30}

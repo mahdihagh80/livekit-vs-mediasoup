@@ -1,0 +1,10 @@
+# 100 voice rooms of 10. Everyone publishes audio.
+name: audio-rooms
+rooms: 100
+maxParticipants: 10
+publishers: 10
+audio: true
+video: false
+add: 5
+every: 5m
+hold: 5m

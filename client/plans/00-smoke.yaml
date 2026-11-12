@@ -1,0 +1,12 @@
+# Two rooms. Each grows by 2 until 4 people, 2 of them publish.
+name: smoke
+rooms: 2
+maxParticipants: 4
+publishers: 2
+audio: true
+video: true
+add: 2
+every: 1m
+hold: 1m
+# Layer each participant subscribes to (% of participants, must sum to 100).
+subscribe: {high: 20, medium: 50, low: 30}

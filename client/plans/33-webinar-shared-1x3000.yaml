@@ -1,0 +1,16 @@
+# ONE webinar of 3000 across TWO generators in the same room: run it on both at
+# the same time with loadgen.shared_rooms {prefix: "web-", shard: "1/2"} on gen-1
+# and {prefix: "web-", shard: "2/2"} on gen-2. Numbers here are for both together.
+# gen-1 has the 3 publishers and 1499 viewers, gen-2 has 1498 viewers;
+# gen-2 starts viewer_delay after gen-1 so the publishers are already in.
+# Timeline: 15 s baseline (+ viewer_delay) + 5 x 2 min + 10 min hold ≈ 21 min.
+name: webinar-shared-1x3000
+rooms: 1
+maxParticipants: 3000
+publishers: 3
+audio: true
+video: true
+add: 500
+every: 2m
+hold: 10m
+subscribe: {high: 20, medium: 50, low: 30}

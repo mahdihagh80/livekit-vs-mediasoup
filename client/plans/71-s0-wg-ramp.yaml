@@ -1,0 +1,31 @@
+# Stage 0 diagnostic run, WG: group rooms of 10 video publishers (audio + VP9
+# SVC L3T3_KEY) and 500 subscribers; every viewer receives 10 video + 10 audio tracks.
+# Rooms of 510, not 1,010, so that three plateaus fit the 50-core layout: one room is about
+# 5,000 video + 5,000 audio downtracks, roughly 37 % of the 50 cores (estimate from W3:
+# 9,000 + 9,000 downtracks = 66.5 %). This plan is also the WG generator calibration.
+# Shared rooms on TWO generators: loadgen.shared_rooms {prefix: "s0wg-", shard: "1/2"} on
+# gen-1 and {prefix: "s0wg-", shard: "2/2"} on gen-2. Shard 1: the 10 publishers of
+# each room + half its viewers; shard 2: the other half, 20 s later.
+#
+# Every 5 min one more full room joins: 510 / 1,020 / 1,530 people = about 37 % / 74 % / 111 %.
+# Generators: 15,000 video subscriptions at the top step, the same as W4 (53.6 % CPU in s14).
+# Profiles: as plan 70. Timeline: 15 s baseline + 2 x 5 min + 5 min hold + leave ≈ 17 min.
+name: s0-wg-ramp
+codec: vp9
+rooms: 3
+maxParticipants: 510
+publishers: 10
+audio: true
+video: true
+addRooms: 1
+every: 5m
+hold: 5m
+subscribe: {high: 20, medium: 50, low: 30}
+networkTarget: all
+network:
+  - {name: clean, percent: 40}
+  - {name: mobile, percent: 15, delay: 60ms, jitter: 20ms, loss: 1}
+  - {name: dippy, percent: 15, dip: {kbps: 300, for: 15s, every: 1m}}
+  - {name: capped, percent: 10, kbps: 1000}
+  - {name: burst, percent: 10, burst: {loss: 5, length: 50ms}}
+  - {name: far, percent: 10, delay: 150ms, jitter: 30ms}

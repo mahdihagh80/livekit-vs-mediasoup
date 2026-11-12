@@ -1,0 +1,19 @@
+# One webinar room: 1 publisher (audio + simulcast video) and 3000 subscribers,
+# all joined in one step and held for 10 minutes.
+#
+# Timeline: 15 s baseline + join (3001 at max_inflight_joins) + 10 min hold
+#           + disconnect + 15 s before the report  ≈ 12 min.
+# Load: every subscriber receives the one publisher -> ~3000 video + ~3000 audio tracks.
+#       generator download ≈ 3000 x (~0.55 Mbps video at the 20/50/30 mix + audio) ≈ 1.7 Gbps.
+# mediasoup: router_max_peers 200 -> the room spreads over ~16 routers/workers with pipes.
+name: webinar-1x3000
+rooms: 1
+maxParticipants: 3001
+publishers: 1
+audio: true
+video: true
+add: 3001         # one step: everyone joins at once
+every: 10m
+hold: 10m
+# Layer each participant subscribes to (% of participants, must sum to 100).
+subscribe: {high: 20, medium: 50, low: 30}
